@@ -178,7 +178,9 @@
             </p>
             <button onclick="checkSyncStatus()" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-indigo-300 font-mono hover:bg-slate-700 transition">
                 🔄 Проверить готовность партнера
-            </button>
+           <button onclick="simulatePartnerAction()" class="block w-full text-center text-xs text-amber-400 font-mono underline hover:text-amber-300 mt-2">
+           ⚡ Симулировать завершение Партнером 2 (Тест рендера)
+           </button>
         </div>
 
         <!-- ШАГ 6: Экран результатов и 3D-тетраэдр -->
@@ -209,16 +211,19 @@
     </div>
 
     <script>
-        let currentPairId = null;
+       let currentPairId = 'a51-demo';
         let myRole = 'p1';
+        let animId = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1);
             if (hash.startsWith('pair=')) {
                 currentPairId = hash.replace('pair=', '');
                 myRole = 'p2';
-                document.getElementById('create-room-block').classList.add('hidden');
-                document.getElementById('join-block').classList.remove('hidden');
+                const createEl = document.getElementById('create-room-block');
+                const joinEl = document.getElementById('join-block');
+                if (createEl) createEl.classList.add('hidden');
+                if (joinEl) joinEl.classList.remove('hidden');
             }
         });
 
@@ -244,25 +249,31 @@
         }
 
         function goToStep(step) {
-            ['pair', 'protocol', 'vectors', 'reading', 'distractor', 'recall', 'waiting', 'result'].forEach(s => {
+            const allSteps = ['pair', 'protocol', 'vectors', 'reading', 'distractor', 'recall', 'waiting', 'result'];
+            allSteps.forEach(s => {
                 const el = document.getElementById('step-' + s);
                 if (el) el.classList.add('hidden');
             });
+
             const target = document.getElementById('step-' + step);
-            if (target) target.classList.remove('hidden');
+            if (target) {
+                target.classList.remove('hidden');
+            }
 
             if (step === 'reading') startReadingTimer();
             if (step === 'result') {
-                // Вызываем сцену с микро-задержкой, чтобы контейнер успел получить ненулевые размеры
-                setTimeout(initThreeScene, 50);
+                // Запуск рендера с гарантией отрисовки контейнера
+                requestAnimationFrame(() => {
+                    setTimeout(initThreeScene, 100);
+                });
             }
         }
 
         function saveVectorsAndProceed() {
             const vec = {
-                x: parseFloat(document.getElementById('input-x').value),
-                y: parseFloat(document.getElementById('input-y').value),
-                z: parseFloat(document.getElementById('input-z').value)
+                x: parseFloat(document.getElementById('input-x').value) || 0.7,
+                y: parseFloat(document.getElementById('input-y').value) || 0.6,
+                z: parseFloat(document.getElementById('input-z').value) || 0.5
             };
             localStorage.setItem(`${currentPairId}_${myRole}_vec`, JSON.stringify(vec));
             goToStep('reading');
@@ -316,9 +327,16 @@
             }
         }
 
-        // Three.js геометрия
-        let scene, camera, renderer, modelGroup;
+        // Кнопка для обхода ожидания при тестировании в одиночку
+        function simulatePartnerAction() {
+            localStorage.setItem(`${currentPairId}_p1_text`, 'Партнер 1 пересказ зафиксирован тестовыми данными...');
+            localStorage.setItem(`${currentPairId}_p2_text`, 'Партнер 2 пересказ зафиксирован тестовыми данными...');
+            localStorage.setItem(`${currentPairId}_p1_vec`, JSON.stringify({ x: 0.8, y: 0.6, z: 0.5 }));
+            localStorage.setItem(`${currentPairId}_p2_vec`, JSON.stringify({ x: 0.4, y: 0.7, z: 0.6 }));
+            goToStep('result');
+        }
 
+        // SRM Математика
         function calculateSynergy(v1, v2, g) {
             const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
             const gVec = new THREE.Vector3(g.x, g.y, g.z);
@@ -335,49 +353,60 @@
             return Math.abs(cx * w.x + cy * w.y + cz * w.z) / 6.0;
         }
 
+        let scene, camera, renderer, modelGroup;
+
         function initThreeScene() {
             const container = document.getElementById('canvas-container');
-            if (!container || container.clientWidth === 0) return;
+            if (!container) return;
 
-            // Если сцена уже была — очистим старую canvas
+            // Если анимация уже шла — глушим ее
+            if (animId) cancelAnimationFrame(animId);
             container.innerHTML = '';
+
+            const w = container.clientWidth || 400;
+            const h = container.clientHeight || 256;
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020617);
 
-            const aspect = container.clientWidth / container.clientHeight;
-            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
+            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
             camera.position.set(2.4, 1.8, 2.4);
             camera.lookAt(0, 0, 0);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
             container.appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
             const light = new THREE.PointLight(0xffffff, 0.8);
-            light.position.set(4, 4, 4);
+            light.position.set(5, 5, 5);
             scene.add(light);
-            scene.add(new THREE.GridHelper(2, 10, 0x1e293b, 0x0f172a));
+            scene.add(new THREE.GridHelper(2, 8, 0x1e293b, 0x0f172a));
 
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            // Достаем сохраненные координаты векторов обоих партнеров
-            const savedV1 = JSON.parse(localStorage.getItem(`${currentPairId}_p1_vec`)) || { x: 0.7, y: 0.6, z: 0.5 };
-            const savedV2 = JSON.parse(localStorage.getItem(`${currentPairId}_p2_vec`)) || { x: 0.5, y: 0.7, z: 0.6 };
-            const goalG    = { x: 0.70, y: 0.60, z: 0.80 };
+            let v1 = { x: 0.7, y: 0.6, z: 0.5 };
+            let v2 = { x: 0.5, y: 0.7, z: 0.6 };
+            try {
+                const s1 = localStorage.getItem(`${currentPairId}_p1_vec`);
+                const s2 = localStorage.getItem(`${currentPairId}_p2_vec`);
+                if (s1) v1 = JSON.parse(s1);
+                if (s2) v2 = JSON.parse(s2);
+            } catch(e) {}
 
-            const w = calculateSynergy(savedV1, savedV2, goalG);
-            const vol = calculateVolume(savedV1, savedV2, w);
+            const goalG = { x: 0.70, y: 0.60, z: 0.80 };
+            const synW = calculateSynergy(v1, v2, goalG);
+            const vol = calculateVolume(v1, v2, synW);
 
             document.getElementById('vol-val').innerText = vol.toFixed(4);
 
             const verts = [
                 0, 0, 0,
-                savedV1.x, savedV1.y, savedV1.z,
-                savedV2.x, savedV2.y, savedV2.z,
-                w.x, w.y, w.z
+                v1.x, v1.y, v1.z,
+                v2.x, v2.y, v2.z,
+                synW.x, synW.y, synW.z
             ];
             const indices = [0,2,1, 0,3,2, 0,1,3, 1,2,3];
 
@@ -392,8 +421,10 @@
             if (vol < 0.015) { col = 0xef4444; statText = "CHECK ENGINE"; }
 
             const statusTag = document.getElementById('status-tag');
-            statusTag.innerText = statText;
-            statusTag.style.color = '#' + col.toString(16);
+            if (statusTag) {
+                statusTag.innerText = statText;
+                statusTag.style.color = '#' + col.toString(16);
+            }
 
             const mat = new THREE.MeshPhongMaterial({
                 color: col,
@@ -410,13 +441,14 @@
 
             const addVec = (v, hex) => {
                 const dir = new THREE.Vector3(v.x, v.y, v.z);
-                modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
+                if (dir.length() > 0) {
+                    modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
+                }
             };
-            addVec(savedV1, 0xf43f5e); // V1
-            addVec(savedV2, 0x38bdf8); // V2
-            addVec(w, 0xfbbf24);        // W
+            addVec(v1, 0xf43f5e);
+            addVec(v2, 0x38bdf8);
+            addVec(synW, 0xfbbf24);
 
-            let animId;
             function animate() {
                 animId = requestAnimationFrame(animate);
                 modelGroup.rotation.y += 0.003;
