@@ -77,37 +77,49 @@
             </button>
         </div>
 
-        <!-- ШАГ 1.5: Расстановка начальных векторов (X, Y, Z, G) -->
+        <!-- ШАГ 1.5: Расстановка начальных векторов (X, Y, Z, G) с живой калибровкой -->
         <div id="step-vectors" class="hidden space-y-5">
             <div>
-                <span class="text-indigo-400 text-xs font-mono uppercase">Базис координат</span>
-                <h2 class="text-lg font-semibold text-white mt-1">Твои текущие приоритеты</h2>
-                <p class="text-slate-400 text-xs">Оцени свой субъективный вклад и ожидания по трем осям SRM.</p>
+                <span class="text-indigo-400 text-xs font-mono uppercase">Базис координат • SRM</span>
+                <h2 class="text-lg font-semibold text-white mt-1">Твой текущий вклад и ресурс</h2>
+                <p class="text-slate-400 text-xs">Двигай ползунки — подсказка покажет точный смысл выбранного уровня[cite: 2].</p>
             </div>
 
-            <div class="space-y-4 bg-slate-950/60 p-4 border border-slate-800 rounded-xl">
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-rose-400 font-medium">Ресурсы (X): деньги, активы, время</span>
-                        <span id="label-x" class="font-mono text-slate-300">0.70</span>
+            <div class="space-y-4 bg-slate-950/70 p-4 border border-slate-800 rounded-xl">
+                <!-- Ось X: Ресурсы -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-rose-400 font-semibold tracking-wide">Ресурсы (X): время, финансы, бытовой вклад[cite: 2]</span>
+                        <span id="label-x" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
-                    <input type="range" id="input-x" min="0.1" max="1" step="0.05" value="0.70" oninput="document.getElementById('label-x').innerText = this.value" class="w-full">
+                    <input type="range" id="input-x" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('x', this.value)" class="w-full">
+                    <div id="hint-x" class="text-[11px] text-slate-400 italic bg-slate-900/60 px-2.5 py-1 rounded border border-slate-800/60">
+                        Закрываю свою половину обязательств, вклад стабильный, но без запаса.
+                    </div>
                 </div>
 
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-sky-400 font-medium">Стабильность (Y): доверие, быт, надежность</span>
-                        <span id="label-y" class="font-mono text-slate-300">0.60</span>
+                <!-- Ось Y: Стабильность -->
+                <div class="space-y-1.5 pt-2 border-t border-slate-800/60">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-sky-400 font-semibold tracking-wide">Стабильность (Y): эмоциональный тыл, надежность[cite: 2]</span>
+                        <span id="label-y" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
-                    <input type="range" id="input-y" min="0.1" max="1" step="0.05" value="0.60" oninput="document.getElementById('label-y').innerText = this.value" class="w-full">
+                    <input type="range" id="input-y" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('y', this.value)" class="w-full">
+                    <div id="hint-y" class="text-[11px] text-slate-400 italic bg-slate-900/60 px-2.5 py-1 rounded border border-slate-800/60">
+                        Предсказуемый партнер, держу обещания, если нет жесткого форс-мажора.
+                    </div>
                 </div>
 
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-emerald-400 font-medium">Рост (Z): развитие, амбиции, статус</span>
-                        <span id="label-z" class="font-mono text-slate-300">0.50</span>
+                <!-- Ось Z: Рост -->
+                <div class="space-y-1.5 pt-2 border-t border-slate-800/60">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-emerald-400 font-semibold tracking-wide">Рост (Z): амбиции, обучение, трансформация[cite: 2]</span>
+                        <span id="label-z" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
-                    <input type="range" id="input-z" min="0.1" max="1" step="0.05" value="0.50" oninput="document.getElementById('label-z').innerText = this.value" class="w-full">
+                    <input type="range" id="input-z" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('z', this.value)" class="w-full">
+                    <div id="hint-z" class="text-[11px] text-slate-400 italic bg-slate-900/60 px-2.5 py-1 rounded border border-slate-800/60">
+                        Умеренный рост: читаю, понемногу развиваюсь в профессии, без резких скачков.
+                    </div>
                 </div>
             </div>
 
@@ -456,6 +468,40 @@
             }
             animate();
         }
+
+        // Живые подсказки под ползунками калибровки векторов
+        function updateVectorHint(axis, val) {
+            const num = parseFloat(val);
+            document.getElementById(`label-${axis}`).innerText = num.toFixed(2);
+            const hintEl = document.getElementById(`hint-${axis}`);
+
+            if (axis === 'x') {
+                if (num <= 0.35) {
+                    hintEl.innerText = "Ресурсная яма: тяну быт/финансы с трудом, сил и свободного времени почти нет.";
+                } else if (num <= 0.70) {
+                    hintEl.innerText = "Закрываю свою половину обязательств, вклад стабильный, но без запаса.";
+                } else {
+                    hintEl.innerText = "Ресурсный локомотив: инвестирую максимум времени, средств и энергии в контур пары.";
+                }
+            } else if (axis === 'y') {
+                if (num <= 0.35) {
+                    hintEl.innerText = "Эмоциональные качели: высокая фоновая тревога, срывы, договоренности плывут.";
+                } else if (num <= 0.70) {
+                    hintEl.innerText = "Предсказуемый партнер, держу обещания, если нет жесткого форс-мажора.";
+                } else {
+                    hintEl.innerText = "Железобетонная опора: гашу панику, даю партнеру ощущение абсолютной безопасности.";
+                }
+            } else if (axis === 'z') {
+                if (num <= 0.35) {
+                    hintEl.innerText = "День сурка: консервирую текущий уют, учиться новому нет ни сил, ни желания.";
+                } else if (num <= 0.70) {
+                    hintEl.innerText = "Умеренный рост: читаю, понемногу развиваюсь в профессии, без резких скачков.";
+                } else {
+                    hintEl.innerText = "Драйвер перемен: масштабирую цели, тащу обоих на новый социальный и ментальный уровень.";
+                }
+            }
+        }
+        
     </script>
 </body>
 </html>
