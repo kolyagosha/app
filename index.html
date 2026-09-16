@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area 51 & LoveVector | Semantic Audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .no-select { user-select: none; -webkit-user-select: none; }
+        #canvas-container canvas { width: 100% !important; height: 100% !important; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Контейнер карточки аудита -->
+    <div id="app-card" class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative z-10">
+        
+        <!-- ШАГ 1: Протокол Ноль -->
+        <div id="step-protocol" class="space-y-6">
+            <div class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono rounded-full uppercase tracking-wider">
+                Area 51 • Шаг 0
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Протокол Ноль</h1>
+            <p class="text-slate-300 leading-relaxed text-sm sm:text-base border-l-2 border-indigo-500 pl-4 py-1 italic bg-slate-950/40 rounded-r">
+                «Если между нами возникнет кризис, мы обязуемся дать друг другу реальный шанс на починку, прежде чем принимать решение о выходе.»
+            </p>
+            <p class="text-slate-400 text-xs">
+                Соглашение не отменяет свободу выбора — оно фиксирует намерение провести инженерную калибровку связки до импульсивного разрыва.
+            </p>
+            <button onclick="goToStep('reading')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Принимаю соглашение
+            </button>
+        </div>
+
+        <!-- ШАГ 2: Чтение ситуации с таймером -->
+        <div id="step-reading" class="hidden space-y-4 no-select" oncontextmenu="return false;">
+            <div class="flex justify-between items-center text-xs text-indigo-400 font-mono">
+                <span>ФИКСАЦИЯ СИТУАЦИИ</span>
+                <span id="read-timer" class="text-base font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded border border-indigo-800">45с</span>
+            </div>
+            <div id="reading-box" class="p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed">
+                Семья несколько месяцев планировала совместную поездку на выходные, чтобы восстановить силы после тяжелого полугодия. Билеты выкуплены, чемоданы почти собраны. В пятницу в обед один из партнеров получает внезапное предложение подключиться к срочному проекту, сулящему крупный денежный транш и серьезное признание коллег, но требующему остаться дома за ноутбуком все субботу и воскресенье. Принять решение нужно в течение тридцати минут.
+            </div>
+            <p class="text-slate-500 text-xs text-center">Прочитайте текст. По истечении таймера он исчезнет.</p>
+        </div>
+
+        <!-- ШАГ 3: Ложные вопросы-дистракторы -->
+        <div id="step-distractor" class="hidden space-y-5">
+            <div>
+                <span class="text-indigo-400 text-xs font-mono uppercase">Калибровка контекста</span>
+                <h2 class="text-lg font-semibold text-white mt-1">Быстрый фокус</h2>
+                <p class="text-slate-400 text-xs">Ответьте на пару простых уточнений перед фиксацией сессии.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1.5">Сколько чашек кофе или чая в день выпивает ваш партнер?</label>
+                    <input type="text" placeholder="Пример: 2-3 чашки" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1.5">В какое время суток партнер обычно наиболее энергичен?</label>
+                    <input type="text" placeholder="Пример: раннее утро / поздний вечер" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <button onclick="goToStep('recall')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Продолжить
+            </button>
+        </div>
+
+        <!-- ШАГ 4: Пересказ со счетчиком слов (25-50) -->
+        <div id="step-recall" class="hidden space-y-4">
+            <div>
+                <span class="text-indigo-400 text-xs font-mono uppercase">Семантическая проекция</span>
+                <h2 class="text-lg font-semibold text-white mt-1">Пересказ своими словами</h2>
+                <p class="text-slate-400 text-xs">Изложите суть прочитанной истории. Допустимый объем: от 25 до 50 слов.</p>
+            </div>
+            <textarea id="recall-input" rows="4" oninput="checkWordCount()" placeholder="Что произошло в истории и как стоило поступить героям..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 outline-none focus:border-indigo-500"></textarea>
+            
+            <div class="flex justify-between items-center text-xs font-mono">
+                <span id="word-counter" class="text-amber-400">Слов: 0 (минимум 25)</span>
+                <span class="text-slate-500">Лимит: 25–50</span>
+            </div>
+
+            <button id="submit-recall-btn" disabled onclick="goToStep('result')" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Зафиксировать координаты
+            </button>
+        </div>
+
+        <!-- ШАГ 5: Экран результатов и 3D-тетраэдр -->
+        <div id="step-result" class="hidden space-y-4">
+            <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+                <div>
+                    <h2 class="text-base font-bold text-white uppercase tracking-wider">SRM Snapshot</h2>
+                    <p class="text-xs text-slate-400">Геометрический объем счастья пары</p>
+                </div>
+                <div class="text-right">
+                    <div id="vol-val" class="text-xl font-mono font-bold text-emerald-400">0.0000</div>
+                    <div id="status-tag" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 inline-block">Healthy</div>
+                </div>
+            </div>
+
+            <!-- Контейнер для Three.js -->
+            <div id="canvas-container" class="w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 relative"></div>
+
+            <div class="p-3 bg-slate-950/60 border border-slate-800/60 rounded-lg text-xs space-y-1">
+                <div class="text-indigo-400 font-semibold font-mono">ДИАГНОСТИЧЕСКАЯ ВЫЖИМКА (IDR / CFI):</div>
+                <p class="text-slate-300">Фокус Партнера 1 смещен на сохранение договора (Стабильность Y). Усилие скоординировано с целью G.</p>
+            </div>
+
+            <p class="text-center text-slate-500 text-[11px]">Следующая калибровка откроется через 24 часа.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Управление шагами интерфейса
+        function goToStep(step) {
+            ['protocol', 'reading', 'distractor', 'recall', 'result'].forEach(s => {
+                document.getElementById('step-' + s).classList.add('hidden');
+            });
+            document.getElementById('step-' + step).classList.remove('hidden');
+
+            if (step === 'reading') startReadingTimer();
+            if (step === 'result') initThreeScene();
+        }
+
+        // Таймер чтения
+        function startReadingTimer() {
+            let left = 45;
+            const timerEl = document.getElementById('read-timer');
+            const interval = setInterval(() => {
+                left--;
+                timerEl.innerText = left + 'с';
+                if (left <= 0) {
+                    clearInterval(interval);
+                    // Физическое удаление текста из DOM (защита от читов)
+                    document.getElementById('reading-box').remove();
+                    goToStep('distractor');
+                }
+            }, 1000);
+        }
+
+        // Валидатор количества слов (25-50)
+        function checkWordCount() {
+            const val = document.getElementById('recall-input').value.trim();
+            const count = val ? val.split(/\s+/).length : 0;
+            const counter = document.getElementById('word-counter');
+            const btn = document.getElementById('submit-recall-btn');
+
+            counter.innerText = `Слов: ${count} (норма: 25–50)`;
+            if (count >= 25 && count <= 50) {
+                counter.className = 'text-emerald-400 font-mono';
+                btn.disabled = false;
+            } else {
+                counter.className = 'text-amber-400 font-mono';
+                btn.disabled = true;
+            }
+        }
+
+        // Инженерный расчет геометрии SRM
+        const partner1 = { x: 0.75, y: 0.60, z: 0.50 };
+        const partner2 = { x: 0.45, y: 0.70, z: 0.65 };
+        const goalG    = { x: 0.70, y: 0.60, z: 0.80 };
+
+        function calculateSynergy(v1, v2, g) {
+            const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+            const gVec = new THREE.Vector3(g.x, g.y, g.z);
+            const gLenSq = gVec.lengthSq();
+            if (gLenSq === 0) return new THREE.Vector3(0, 0, 0);
+            const scalar = sum.dot(gVec) / gLenSq;
+            return gVec.multiplyScalar(scalar);
+        }
+
+        function calculateVolume(v1, v2, w) {
+            const cx = v1.y * v2.z - v1.z * v2.y;
+            const cy = v1.z * v2.x - v1.x * v2.z;
+            const cz = v1.x * v2.y - v1.y * v2.x;
+            return Math.abs(cx * w.x + cy * w.y + cz * w.z) / 6.0;
+        }
+
+        // Инициализация Three.js
+        let scene, camera, renderer, modelGroup;
+
+        function initThreeScene() {
+            const container = document.getElementById('canvas-container');
+            if (renderer) return; // Защита от повторной инициализации
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(2.5, 2.0, 2.5);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const light = new THREE.PointLight(0xffffff, 0.8);
+            light.position.set(4, 4, 4);
+            scene.add(light);
+            scene.add(new THREE.GridHelper(2, 10, 0x1e293b, 0x0f172a));
+
+            modelGroup = new THREE.Group();
+            scene.add(modelGroup);
+
+            // Построение фигур
+            const w = calculateSynergy(partner1, partner2, goalG);
+            const vol = calculateVolume(partner1, partner2, w);
+
+            document.getElementById('vol-val').innerText = vol.toFixed(4);
+
+            const verts = [
+                0, 0, 0,
+                partner1.x, partner1.y, partner1.z,
+                partner2.x, partner2.y, partner2.z,
+                w.x, w.y, w.z
+            ];
+            const indices = [0,2,1, 0,3,2, 0,1,3, 1,2,3];
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+            geo.setIndex(indices);
+            geo.computeVertexNormals();
+
+            const mat = new THREE.MeshPhongMaterial({
+                color: 0x10b981,
+                opacity: 0.35,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+
+            modelGroup.add(new THREE.Mesh(geo, mat));
+            modelGroup.add(new THREE.LineSegments(
+                new THREE.EdgesGeometry(geo),
+                new THREE.LineBasicMaterial({ color: 0x34d399, linewidth: 2 })
+            ));
+
+            // Стрелки векторов (вращаются синхронно)
+            const addVec = (v, hex) => {
+                const dir = new THREE.Vector3(v.x, v.y, v.z);
+                modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
+            };
+            addVec(partner1, 0xf43f5e); // V1 (красный)
+            addVec(partner2, 0x38bdf8); // V2 (синий)
+            addVec(w, 0xfbbf24);        // W (синергия)
+
+            function animate() {
+                requestAnimationFrame(animate);
+                modelGroup.rotation.y += 0.003;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
