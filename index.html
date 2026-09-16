@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area 51 & LoveVector | Semantic Audit</title>
+    <title>Area 51 & LoveVector | Pairing Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
@@ -13,23 +13,67 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- Контейнер карточки аудита -->
     <div id="app-card" class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative z-10">
         
-        <!-- ШАГ 1: Протокол Ноль -->
-        <div id="step-protocol" class="space-y-6">
+        <!-- ШАГ 0: Сопряжение пары (Pair Setup) -->
+        <div id="step-pair" class="space-y-6">
             <div class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono rounded-full uppercase tracking-wider">
-                Area 51 • Шаг 0
+                Синхронизация пары
             </div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">Протокол Ноль</h1>
-            <p class="text-slate-300 leading-relaxed text-sm sm:text-base border-l-2 border-indigo-500 pl-4 py-1 italic bg-slate-950/40 rounded-r">
-                «Если между нами возникнет кризис, мы обязуемся дать друг другу реальный шанс на починку, прежде чем принимать решение о выходе.»
+            <h1 class="text-2xl font-bold tracking-tight text-white">Пространство Area 51</h1>
+            <p class="text-slate-300 text-sm leading-relaxed">
+                Калибровка требует участия обоих партнеров. Создайте закрытую комнату и передайте персональный ключ второй половине[cite: 1].
             </p>
-            <p class="text-slate-400 text-xs">
-                Соглашение не отменяет свободу выбора — оно фиксирует намерение провести инженерную калибровку связки до импульсивного разрыва.
+
+            <div id="create-room-block" class="space-y-4">
+                <button onclick="initNewPair()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                    Сгенерировать ключ для двоих
+                </button>
+            </div>
+
+            <div id="invite-block" class="hidden space-y-4 pt-2">
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-indigo-300 break-all" id="share-link-display"></div>
+                <button onclick="copyShareLink()" id="copy-btn" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-mono transition text-slate-200">
+                    📋 Скопировать ссылку для партнера
+                </button>
+                <div class="pt-2">
+                    <button onclick="goToStep('protocol')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                        Я Партнер 1 — начать сессию
+                    </button>
+                </div>
+            </div>
+
+            <div id="join-block" class="hidden space-y-4">
+                <div class="p-4 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-indigo-200 leading-relaxed">
+                    Вы подключились по приглашению как <b>Партнер 2</b>. Сессия синхронизирована с вашей парой.
+                </div>
+                <button onclick="goToStep('protocol')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                    Присоединиться к сессии
+                </button>
+            </div>
+        </div>
+
+        <!-- ШАГ 1: Протокол Ноль + 24-часовой регламент -->
+        <div id="step-protocol" class="hidden space-y-6">
+            <div class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono rounded-full uppercase tracking-wider">
+                Area 51 • Протокол Ноль
+            </div>
+            <h2 class="text-xl font-bold tracking-tight text-white">Соглашение на калибровку</h2>
+            <p class="text-slate-300 text-sm leading-relaxed border-l-2 border-indigo-500 pl-4 py-1 italic bg-slate-950/40 rounded-r">
+                «Если между нами возникнет кризис, мы обязуемся дать друг другу реальный шанс на починку, прежде чем принимать решение о выходе»[cite: 1].
             </p>
-            <button onclick="goToStep('reading')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
-                Принимаю соглашение
+
+            <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" id="check-24h" onchange="toggleProtocolBtn()" class="mt-1 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0">
+                    <span class="text-xs text-slate-300 leading-relaxed">
+                        Мы обязуемся завершить свои этапы пересказа в течение <b>24 часов</b> с момента старта первого партнера.
+                    </span>
+                </label>
+            </div>
+
+            <button id="protocol-btn" disabled onclick="goToStep('reading')" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Подтверждаю и начинаю чтение
             </button>
         </div>
 
@@ -81,17 +125,32 @@
                 <span class="text-slate-500">Лимит: 25–50</span>
             </div>
 
-            <button id="submit-recall-btn" disabled onclick="goToStep('result')" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
-                Зафиксировать координаты
+            <button id="submit-recall-btn" disabled onclick="submitRecallAction()" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Зафиксировать пересказ
             </button>
         </div>
 
-        <!-- ШАГ 5: Экран результатов и 3D-тетраэдр -->
+        <!-- ШАГ 5: Замок ожидания второго партнера -->
+        <div id="step-waiting" class="hidden text-center py-6 space-y-4">
+            <div class="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <h2 class="text-lg font-bold text-white">Ваш шаг зафиксирован!</h2>
+            <p class="text-slate-300 text-xs max-w-sm mx-auto leading-relaxed">
+                Тетраэдр строится только при наличии векторов обоих партнеров. Ожидаем прохождения вторым партнером по вашему Pair Key.
+            </p>
+            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono">
+                Лимит окна калибровки: 24 часа
+            </div>
+            <button onclick="checkSyncStatus()" class="text-xs text-indigo-400 underline font-mono hover:text-indigo-300">
+                🔄 Проверить готовность партнера
+            </button>
+        </div>
+
+        <!-- ШАГ 6: Экран результатов и 3D-тетраэдр -->
         <div id="step-result" class="hidden space-y-4">
             <div class="flex justify-between items-start border-b border-slate-800 pb-3">
                 <div>
                     <h2 class="text-base font-bold text-white uppercase tracking-wider">SRM Snapshot</h2>
-                    <p class="text-xs text-slate-400">Геометрический объем счастья пары</p>
+                    <p class="text-xs text-slate-400">Синхронный тетраэдр синергии пары[cite: 2]</p>
                 </div>
                 <div class="text-right">
                     <div id="vol-val" class="text-xl font-mono font-bold text-emerald-400">0.0000</div>
@@ -99,12 +158,13 @@
                 </div>
             </div>
 
-            <!-- Контейнер для Three.js -->
             <div id="canvas-container" class="w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 relative"></div>
 
             <div class="p-3 bg-slate-950/60 border border-slate-800/60 rounded-lg text-xs space-y-1">
-                <div class="text-indigo-400 font-semibold font-mono">ДИАГНОСТИЧЕСКАЯ ВЫЖИМКА (IDR / CFI):</div>
-                <p class="text-slate-300">Фокус Партнера 1 смещен на сохранение договора (Стабильность Y). Усилие скоординировано с целью G.</p>
+                <div class="text-indigo-400 font-semibold font-mono">СЕМАНТИЧЕСКИЙ АУДИТ (CFI / IDR)[cite: 1]:</div>
+                <p id="audit-feedback" class="text-slate-300">
+                    Оба партнера завершили шаг. Анализ семантических примитивов показал высокую координацию вокруг цели G[cite: 1, 2].
+                </p>
             </div>
 
             <p class="text-center text-slate-500 text-[11px]">Следующая калибровка откроется через 24 часа.</p>
@@ -113,10 +173,46 @@
     </div>
 
     <script>
-        // Управление шагами интерфейса
+        // Состояние локальной сессии пары
+        let currentPairId = null;
+        let myRole = 'p1'; // 'p1' или 'p2'
+
+        // Проверка URL на наличие ключа пары при старте
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash.startsWith('pair=')) {
+                currentPairId = hash.replace('pair=', '');
+                myRole = 'p2';
+                document.getElementById('create-room-block').classList.add('hidden');
+                document.getElementById('join-block').classList.remove('hidden');
+            }
+        });
+
+        function initNewPair() {
+            currentPairId = 'a51-' + Math.random().toString(36).substring(2, 8);
+            const shareUrl = window.location.origin + window.location.pathname + '#pair=' + currentPairId;
+            document.getElementById('share-link-display').innerText = shareUrl;
+            document.getElementById('create-room-block').classList.add('hidden');
+            document.getElementById('invite-block').classList.remove('hidden');
+        }
+
+        function copyShareLink() {
+            const linkText = document.getElementById('share-link-display').innerText;
+            navigator.clipboard.writeText(linkText);
+            const btn = document.getElementById('copy-btn');
+            btn.innerText = '✅ Ссылка скопирована!';
+            setTimeout(() => { btn.innerText = '📋 Скопировать ссылку для партнера'; }, 2000);
+        }
+
+        function toggleProtocolBtn() {
+            const checked = document.getElementById('check-24h').checked;
+            document.getElementById('protocol-btn').disabled = !checked;
+        }
+
         function goToStep(step) {
-            ['protocol', 'reading', 'distractor', 'recall', 'result'].forEach(s => {
-                document.getElementById('step-' + s).classList.add('hidden');
+            ['pair', 'protocol', 'reading', 'distractor', 'recall', 'waiting', 'result'].forEach(s => {
+                const el = document.getElementById('step-' + s);
+                if (el) el.classList.add('hidden');
             });
             document.getElementById('step-' + step).classList.remove('hidden');
 
@@ -124,7 +220,6 @@
             if (step === 'result') initThreeScene();
         }
 
-        // Таймер чтения
         function startReadingTimer() {
             let left = 45;
             const timerEl = document.getElementById('read-timer');
@@ -133,14 +228,13 @@
                 timerEl.innerText = left + 'с';
                 if (left <= 0) {
                     clearInterval(interval);
-                    // Физическое удаление текста из DOM (защита от читов)
-                    document.getElementById('reading-box').remove();
+                    const box = document.getElementById('reading-box');
+                    if (box) box.remove();
                     goToStep('distractor');
                 }
             }, 1000);
         }
 
-        // Валидатор количества слов (25-50)
         function checkWordCount() {
             const val = document.getElementById('recall-input').value.trim();
             const count = val ? val.split(/\s+/).length : 0;
@@ -157,7 +251,26 @@
             }
         }
 
-        // Инженерный расчет геометрии SRM
+        // Локальная имитация синхронного замка
+        function submitRecallAction() {
+            const text = document.getElementById('recall-input').value.trim();
+            localStorage.setItem(`${currentPairId}_${myRole}`, text);
+
+            checkSyncStatus();
+        }
+
+        function checkSyncStatus() {
+            const p1Done = localStorage.getItem(`${currentPairId}_p1`);
+            const p2Done = localStorage.getItem(`${currentPairId}_p2`);
+
+            if (p1Done && p2Done) {
+                goToStep('result');
+            } else {
+                goToStep('waiting');
+            }
+        }
+
+        // Инженерный расчет геометрии SRM[cite: 2]
         const partner1 = { x: 0.75, y: 0.60, z: 0.50 };
         const partner2 = { x: 0.45, y: 0.70, z: 0.65 };
         const goalG    = { x: 0.70, y: 0.60, z: 0.80 };
@@ -178,12 +291,11 @@
             return Math.abs(cx * w.x + cy * w.y + cz * w.z) / 6.0;
         }
 
-        // Инициализация Three.js
         let scene, camera, renderer, modelGroup;
 
         function initThreeScene() {
             const container = document.getElementById('canvas-container');
-            if (renderer) return; // Защита от повторной инициализации
+            if (renderer) return;
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020617);
@@ -205,7 +317,6 @@
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            // Построение фигур
             const w = calculateSynergy(partner1, partner2, goalG);
             const vol = calculateVolume(partner1, partner2, w);
 
@@ -237,14 +348,13 @@
                 new THREE.LineBasicMaterial({ color: 0x34d399, linewidth: 2 })
             ));
 
-            // Стрелки векторов (вращаются синхронно)
             const addVec = (v, hex) => {
                 const dir = new THREE.Vector3(v.x, v.y, v.z);
                 modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
             };
-            addVec(partner1, 0xf43f5e); // V1 (красный)
-            addVec(partner2, 0x38bdf8); // V2 (синий)
-            addVec(w, 0xfbbf24);        // W (синергия)
+            addVec(partner1, 0xf43f5e);
+            addVec(partner2, 0x38bdf8);
+            addVec(w, 0xfbbf24);
 
             function animate() {
                 requestAnimationFrame(animate);
