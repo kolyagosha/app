@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area 51 & LoveVector | Pairing Flow</title>
+    <title>Area 51 & LoveVector | Diagnostic Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         .no-select { user-select: none; -webkit-user-select: none; }
-        #canvas-container canvas { width: 100% !important; height: 100% !important; }
+        input[type=range] { accent-color: #6366f1; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
     <div id="app-card" class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative z-10">
         
-        <!-- ШАГ 0: Сопряжение пары (Pair Setup) -->
+        <!-- ШАГ 0: Сопряжение пары -->
         <div id="step-pair" class="space-y-6">
             <div class="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono rounded-full uppercase tracking-wider">
                 Синхронизация пары
@@ -72,8 +72,47 @@
                 </label>
             </div>
 
-            <button id="protocol-btn" disabled onclick="goToStep('reading')" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
-                Подтверждаю и начинаю чтение
+            <button id="protocol-btn" disabled onclick="goToStep('vectors')" class="w-full py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Подтверждаю и перехожу к калибровке осей
+            </button>
+        </div>
+
+        <!-- ШАГ 1.5: Расстановка начальных векторов (X, Y, Z, G) -->
+        <div id="step-vectors" class="hidden space-y-5">
+            <div>
+                <span class="text-indigo-400 text-xs font-mono uppercase">Базис координат</span>
+                <h2 class="text-lg font-semibold text-white mt-1">Твои текущие приоритеты</h2>
+                <p class="text-slate-400 text-xs">Оцени свой субъективный вклад и ожидания по трем осям SRM.</p>
+            </div>
+
+            <div class="space-y-4 bg-slate-950/60 p-4 border border-slate-800 rounded-xl">
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-rose-400 font-medium">Ресурсы (X): деньги, активы, время</span>
+                        <span id="label-x" class="font-mono text-slate-300">0.70</span>
+                    </div>
+                    <input type="range" id="input-x" min="0.1" max="1" step="0.05" value="0.70" oninput="document.getElementById('label-x').innerText = this.value" class="w-full">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-sky-400 font-medium">Стабильность (Y): доверие, быт, надежность</span>
+                        <span id="label-y" class="font-mono text-slate-300">0.60</span>
+                    </div>
+                    <input type="range" id="input-y" min="0.1" max="1" step="0.05" value="0.60" oninput="document.getElementById('label-y').innerText = this.value" class="w-full">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-emerald-400 font-medium">Рост (Z): развитие, амбиции, статус</span>
+                        <span id="label-z" class="font-mono text-slate-300">0.50</span>
+                    </div>
+                    <input type="range" id="input-z" min="0.1" max="1" step="0.05" value="0.50" oninput="document.getElementById('label-z').innerText = this.value" class="w-full">
+                </div>
+            </div>
+
+            <button onclick="saveVectorsAndProceed()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Зафиксировать оси и перейти к чтению
             </button>
         </div>
 
@@ -98,7 +137,7 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-300 mb-1.5">Сколько чашек кофе или чая в день выпивает ваш партнер?</label>
+                    <label class="block text-xs text-slate-300 mb-1.5">Сколько чашек кофе или чая в день выпивает твой партнер?</label>
                     <input type="text" placeholder="Пример: 2-3 чашки" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 outline-none focus:border-indigo-500">
                 </div>
                 <div>
@@ -135,12 +174,9 @@
             <div class="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
             <h2 class="text-lg font-bold text-white">Ваш шаг зафиксирован!</h2>
             <p class="text-slate-300 text-xs max-w-sm mx-auto leading-relaxed">
-                Тетраэдр строится только при наличии векторов обоих партнеров. Ожидаем прохождения вторым партнером по вашему Pair Key.
+                Тетраэдр строится только при наличии векторов обоих партнеров[cite: 2]. Ожидаем прохождения вторым партнером по вашему Pair Key.
             </p>
-            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono">
-                Лимит окна калибровки: 24 часа
-            </div>
-            <button onclick="checkSyncStatus()" class="text-xs text-indigo-400 underline font-mono hover:text-indigo-300">
+            <button onclick="checkSyncStatus()" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-indigo-300 font-mono hover:bg-slate-700 transition">
                 🔄 Проверить готовность партнера
             </button>
         </div>
@@ -158,12 +194,12 @@
                 </div>
             </div>
 
-            <div id="canvas-container" class="w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 relative"></div>
+            <div id="canvas-container" class="w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative"></div>
 
             <div class="p-3 bg-slate-950/60 border border-slate-800/60 rounded-lg text-xs space-y-1">
                 <div class="text-indigo-400 font-semibold font-mono">СЕМАНТИЧЕСКИЙ АУДИТ (CFI / IDR)[cite: 1]:</div>
                 <p id="audit-feedback" class="text-slate-300">
-                    Оба партнера завершили шаг. Анализ семантических примитивов показал высокую координацию вокруг цели G[cite: 1, 2].
+                    Оба партнера завершили шаг. Анализ семантических примитивов показал синхронизацию векторов[cite: 1, 2].
                 </p>
             </div>
 
@@ -173,11 +209,9 @@
     </div>
 
     <script>
-        // Состояние локальной сессии пары
         let currentPairId = null;
-        let myRole = 'p1'; // 'p1' или 'p2'
+        let myRole = 'p1';
 
-        // Проверка URL на наличие ключа пары при старте
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1);
             if (hash.startsWith('pair=')) {
@@ -210,14 +244,28 @@
         }
 
         function goToStep(step) {
-            ['pair', 'protocol', 'reading', 'distractor', 'recall', 'waiting', 'result'].forEach(s => {
+            ['pair', 'protocol', 'vectors', 'reading', 'distractor', 'recall', 'waiting', 'result'].forEach(s => {
                 const el = document.getElementById('step-' + s);
                 if (el) el.classList.add('hidden');
             });
-            document.getElementById('step-' + step).classList.remove('hidden');
+            const target = document.getElementById('step-' + step);
+            if (target) target.classList.remove('hidden');
 
             if (step === 'reading') startReadingTimer();
-            if (step === 'result') initThreeScene();
+            if (step === 'result') {
+                // Вызываем сцену с микро-задержкой, чтобы контейнер успел получить ненулевые размеры
+                setTimeout(initThreeScene, 50);
+            }
+        }
+
+        function saveVectorsAndProceed() {
+            const vec = {
+                x: parseFloat(document.getElementById('input-x').value),
+                y: parseFloat(document.getElementById('input-y').value),
+                z: parseFloat(document.getElementById('input-z').value)
+            };
+            localStorage.setItem(`${currentPairId}_${myRole}_vec`, JSON.stringify(vec));
+            goToStep('reading');
         }
 
         function startReadingTimer() {
@@ -225,7 +273,7 @@
             const timerEl = document.getElementById('read-timer');
             const interval = setInterval(() => {
                 left--;
-                timerEl.innerText = left + 'с';
+                if (timerEl) timerEl.innerText = left + 'с';
                 if (left <= 0) {
                     clearInterval(interval);
                     const box = document.getElementById('reading-box');
@@ -251,17 +299,15 @@
             }
         }
 
-        // Локальная имитация синхронного замка
         function submitRecallAction() {
             const text = document.getElementById('recall-input').value.trim();
-            localStorage.setItem(`${currentPairId}_${myRole}`, text);
-
+            localStorage.setItem(`${currentPairId}_${myRole}_text`, text);
             checkSyncStatus();
         }
 
         function checkSyncStatus() {
-            const p1Done = localStorage.getItem(`${currentPairId}_p1`);
-            const p2Done = localStorage.getItem(`${currentPairId}_p2`);
+            const p1Done = localStorage.getItem(`${currentPairId}_p1_text`);
+            const p2Done = localStorage.getItem(`${currentPairId}_p2_text`);
 
             if (p1Done && p2Done) {
                 goToStep('result');
@@ -270,10 +316,8 @@
             }
         }
 
-        // Инженерный расчет геометрии SRM[cite: 2]
-        const partner1 = { x: 0.75, y: 0.60, z: 0.50 };
-        const partner2 = { x: 0.45, y: 0.70, z: 0.65 };
-        const goalG    = { x: 0.70, y: 0.60, z: 0.80 };
+        // Three.js геометрия
+        let scene, camera, renderer, modelGroup;
 
         function calculateSynergy(v1, v2, g) {
             const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
@@ -291,17 +335,19 @@
             return Math.abs(cx * w.x + cy * w.y + cz * w.z) / 6.0;
         }
 
-        let scene, camera, renderer, modelGroup;
-
         function initThreeScene() {
             const container = document.getElementById('canvas-container');
-            if (renderer) return;
+            if (!container || container.clientWidth === 0) return;
+
+            // Если сцена уже была — очистим старую canvas
+            container.innerHTML = '';
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020617);
 
-            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-            camera.position.set(2.5, 2.0, 2.5);
+            const aspect = container.clientWidth / container.clientHeight;
+            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
+            camera.position.set(2.4, 1.8, 2.4);
             camera.lookAt(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -317,15 +363,20 @@
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            const w = calculateSynergy(partner1, partner2, goalG);
-            const vol = calculateVolume(partner1, partner2, w);
+            // Достаем сохраненные координаты векторов обоих партнеров
+            const savedV1 = JSON.parse(localStorage.getItem(`${currentPairId}_p1_vec`)) || { x: 0.7, y: 0.6, z: 0.5 };
+            const savedV2 = JSON.parse(localStorage.getItem(`${currentPairId}_p2_vec`)) || { x: 0.5, y: 0.7, z: 0.6 };
+            const goalG    = { x: 0.70, y: 0.60, z: 0.80 };
+
+            const w = calculateSynergy(savedV1, savedV2, goalG);
+            const vol = calculateVolume(savedV1, savedV2, w);
 
             document.getElementById('vol-val').innerText = vol.toFixed(4);
 
             const verts = [
                 0, 0, 0,
-                partner1.x, partner1.y, partner1.z,
-                partner2.x, partner2.y, partner2.z,
+                savedV1.x, savedV1.y, savedV1.z,
+                savedV2.x, savedV2.y, savedV2.z,
                 w.x, w.y, w.z
             ];
             const indices = [0,2,1, 0,3,2, 0,1,3, 1,2,3];
@@ -335,8 +386,17 @@
             geo.setIndex(indices);
             geo.computeVertexNormals();
 
+            let col = 0x10b981;
+            let statText = "HEALTHY";
+            if (vol < 0.025) { col = 0xf59e0b; statText = "WARNING"; }
+            if (vol < 0.015) { col = 0xef4444; statText = "CHECK ENGINE"; }
+
+            const statusTag = document.getElementById('status-tag');
+            statusTag.innerText = statText;
+            statusTag.style.color = '#' + col.toString(16);
+
             const mat = new THREE.MeshPhongMaterial({
-                color: 0x10b981,
+                color: col,
                 opacity: 0.35,
                 transparent: true,
                 side: THREE.DoubleSide
@@ -345,19 +405,20 @@
             modelGroup.add(new THREE.Mesh(geo, mat));
             modelGroup.add(new THREE.LineSegments(
                 new THREE.EdgesGeometry(geo),
-                new THREE.LineBasicMaterial({ color: 0x34d399, linewidth: 2 })
+                new THREE.LineBasicMaterial({ color: col, linewidth: 2 })
             ));
 
             const addVec = (v, hex) => {
                 const dir = new THREE.Vector3(v.x, v.y, v.z);
                 modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
             };
-            addVec(partner1, 0xf43f5e);
-            addVec(partner2, 0x38bdf8);
-            addVec(w, 0xfbbf24);
+            addVec(savedV1, 0xf43f5e); // V1
+            addVec(savedV2, 0x38bdf8); // V2
+            addVec(w, 0xfbbf24);        // W
 
+            let animId;
             function animate() {
-                requestAnimationFrame(animate);
+                animId = requestAnimationFrame(animate);
                 modelGroup.rotation.y += 0.003;
                 renderer.render(scene, camera);
             }
