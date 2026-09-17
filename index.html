@@ -133,11 +133,11 @@
         <!-- ШАГ 2: Чтение ситуации с таймером -->
         <div id="step-reading" class="hidden space-y-4 no-select" oncontextmenu="return false;">
             <div class="flex justify-between items-center text-xs text-indigo-400 font-mono">
-                <span>ФИКСАЦИЯ СИТУАЦИИ</span>
+                <span id="reading-scenario-title">ФИКСАЦИЯ СИТУАЦИИ</span>
                 <span id="read-timer" class="text-base font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded border border-indigo-800">45с</span>
             </div>
             <div id="reading-box" class="p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed">
-                Семья несколько месяцев планировала совместную поездку на выходные, чтобы восстановить силы после тяжелого полугодия. Билеты выкуплены, чемоданы почти собраны. В пятницу в обед один из партнеров получает внезапное предложение подключиться к срочному проекту, сулящему крупный денежный транш и серьезное признание коллег, но требующему остаться дома за ноутбуком все субботу и воскресенье. Принять решение нужно в течение тридцати минут.
+                Загрузка сценария...
             </div>
             <p class="text-slate-500 text-xs text-center">Прочитайте текст. По истечении таймера он исчезнет.</p>
         </div>
@@ -241,62 +241,22 @@
     </div>
 
     <script>
-        // БАНК СЦЕНАРИЕВ
-        const SCENARIOS = [
-            {
-                id: "priority_conflict",
-                title: "Сценарий 1: The Priority Conflict (Обязательство vs Карьера)",
-                text: "Семья три месяца планировала четырехдневную поездку к морю, чтобы восстановиться после тяжелого квартала. Билеты выкуплены, апартаменты оплачены, вещи собраны. В пятницу в полдень одному из партнеров поступает срочный звонок от ключевого клиента с предложением возглавить высокобюджетный проект. Это гарантирует солидный финансовый бонус и мощный карьерный скачок, но требует непрерывной работы все выходные. Окончательный ответ необходимо дать в течение тридцати минут.",
-                keywords_p1_focus: ["карьер", "проект", "шанс", "деньг", "бонус", "рост", "будущ", "opportunit", "career", "money"],
-                keywords_p2_focus: ["отдых", "поездк", "договор", "билет", "чемодан", "обещан", "нечестн", "trip", "break", "commit"],
-                repair_a: "Для партнера в фокусе Карьеры (Стабилизирующий базис): не продавливать решение ультимативно, а вернуть баланс по оси Стабильности Y через компенсацию («Мы переносим поездку на следующие выходные, а с бонуса повышаем уровень отеля»).",
-                repair_b: "Для второго партнера (Демпфирование эмоций γ < 1): взять паузу перед реакцией, не эскалировать конфликт обвинениями в эгоизме, обсудить условия совместной выгоды от проекта."
-            },
-            {
-                id: "spatial_tradeoff",
-                title: "Сценарий 2: The Spatial Trade-Off (Дистанция vs Рутина)",
-                text: "После двух лет стабильной совместной жизни одному из партнеров предлагают престижную трехмесячную стажировку в другом городе. Предложение включает крупную стипендию и отличные перспективы, но означает временную разлуку и перекладывание всех бытовых вопросов на второго партнера. Контракт нужно подписать до утра понедельника.",
-                keywords_p1_focus: ["стажировк", "перспектив", "город", "развити", "стипенди", "fellowship", "growth"],
-                keywords_p2_focus: ["быт", "разлук", "один", "тяжело", "остаться", "нагрузк", "alone", "chores"],
-                repair_a: "Для партнера на стажировке: продумать практическую разгрузку быта для оставшегося партнера (клининг, заказ доставки, регулярные визиты).",
-                repair_b: "Для остающегося партнера: зафиксировать временность статуса и рассматривать этап как инвестицию в общее долгосрочное благополучие."
-            },
-            {
-                id: "resource_dilemma",
-                title: "Сценарий 3: The Resource Dilemma (Семья vs Свой дом)",
-                text: "Пара в течение года копила средства на первоначальный взнос за собственное жилье. Внезапно близкий родственник одного из партнеров оказывается в остром финансовом кризисе, требующем срочной помощи в размере половины накоплений. Возврат долга бессрочный. Помощь отодвинет покупку жилья минимум на год.",
-                keywords_p1_focus: ["родственник", "долг", "помощь", "семь", "кризис", "family", "help", "loan"],
-                keywords_p2_focus: ["жиль", "взнос", "накоплен", "несправедлив", "год", "дом", "house", "savings"],
-                repair_a: "Для партнера, чья родня требует помощи: оформить четкие сроки и юридические рамки возврата, не делать из этого безоговорочную жертву.",
-                repair_b: "Для второго партнера: признать ценность семейной солидарности, но зафиксировать неприкосновенный минимум финансовой безопасности."
-            }
-        ];
-
         let currentPairId = 'a51-demo';
         let myRole = 'p1';
         let animId = null;
         let crossStep = 1;
-        let activeScenario = SCENARIOS[0];
+        let SCENARIOS = [];
+        let activeScenario = null;
 
-        // Инициализация сессии и синхронизация сценария
-        window.addEventListener('DOMContentLoaded', () => {
-            const hash = window.location.hash.substring(1);
-            if (hash.startsWith('pair=')) {
-                currentPairId = hash.replace('pair=', '');
-                myRole = 'p2';
-                const createEl = document.getElementById('create-room-block');
-                const joinEl = document.getElementById('join-block');
-                if (createEl) createEl.classList.add('hidden');
-                if (joinEl) joinEl.classList.remove('hidden');
-            }
-
-            // Выбираем сценарий на основе хеша пары (детерминированно для двоих)
-            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
-            activeScenario = SCENARIOS[scenarioIndex];
-
-            const readingBox = document.getElementById('reading-box');
-            if (readingBox) readingBox.innerText = activeScenario.text;
-        });
+        const FALLBACK_SCENARIO = {
+            id: "priority_conflict",
+            title: "Сценарий 1: The Priority Conflict (Обязательство vs Карьера)",
+            text: "Семья три месяца планировала четырехдневную поездку к морю, чтобы восстановиться после тяжелого квартала. Билеты выкуплены, апартаменты оплачены, вещи собраны. В пятницу в полдень одному из партнеров поступает срочный звонок от ключевого клиента с предложением возглавить высокобюджетный проект. Это гарантирует солидный финансовый бонус и мощный карьерный скачок, но требует непрерывной работы все выходные. Окончательный ответ необходимо дать в течение тридцати минут.",
+            keywords_p1_focus: ["карьер", "проект", "шанс", "деньг", "бонус", "рост", "будущ", "opportunit", "career", "money", "invest"],
+            keywords_p2_focus: ["отдых", "поездк", "договор", "билет", "чемодан", "обещан", "нечестн", "trip", "break", "commit", "unfair"],
+            repair_a: "Для партнера в фокусе Карьеры (Стабилизирующий базис): не продавливать решение ультимативно, а вернуть баланс по оси Стабильности Y через компенсацию («Мы переносим поездку на следующие выходные, а с бонуса повышаем уровень отеля»).",
+            repair_b: "Для второго партнера (Демпфирование эмоций γ < 1): взять паузу перед реакцией, не эскалировать конфликт обвинениями в эгоизме, обсудить условия совместной выгоды от проекта."
+        };
 
         function hashCode(str) {
             let hash = 0;
@@ -307,16 +267,51 @@
             return hash;
         }
 
+        async function loadScenariosAndSync() {
+            try {
+                const res = await fetch('scenarios.json');
+                if (res.ok) {
+                    SCENARIOS = await res.json();
+                } else {
+                    SCENARIOS = [FALLBACK_SCENARIO];
+                }
+            } catch (e) {
+                SCENARIOS = [FALLBACK_SCENARIO];
+            }
+            syncScenarioWithPair();
+        }
+
+        function syncScenarioWithPair() {
+            if (!SCENARIOS || SCENARIOS.length === 0) SCENARIOS = [FALLBACK_SCENARIO];
+            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
+            activeScenario = SCENARIOS[scenarioIndex];
+
+            const titleEl = document.getElementById('reading-scenario-title');
+            const boxEl = document.getElementById('reading-box');
+            if (titleEl) titleEl.innerText = activeScenario.title;
+            if (boxEl) boxEl.innerText = activeScenario.text;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const hash = window.location.hash.substring(1);
+            if (hash.startsWith('pair=')) {
+                currentPairId = hash.replace('pair=', '');
+                myRole = 'p2';
+                const createEl = document.getElementById('create-room-block');
+                const joinEl = document.getElementById('join-block');
+                if (createEl) createEl.classList.add('hidden');
+                if (joinEl) joinEl.classList.remove('hidden');
+            }
+            await loadScenariosAndSync();
+        });
+
         function initNewPair() {
             currentPairId = 'a51-' + Math.random().toString(36).substring(2, 8);
             const shareUrl = window.location.origin + window.location.pathname + '#pair=' + currentPairId;
             document.getElementById('share-link-display').innerText = shareUrl;
             document.getElementById('create-room-block').classList.add('hidden');
             document.getElementById('invite-block').classList.remove('hidden');
-
-            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
-            activeScenario = SCENARIOS[scenarioIndex];
-            document.getElementById('reading-box').innerText = activeScenario.text;
+            syncScenarioWithPair();
         }
 
         function copyShareLink() {
@@ -462,7 +457,6 @@
             goToStep('result');
         }
 
-        // ЛИНГВИСТИЧЕСКИЙ АНАЛИЗАТОР (CFI & IDR)
         function analyzeSemanticTexts(t1, t2) {
             const weMarkers = ["мы", "наш", "нас", "нам", "вместе", "обоим", "сообща", "we", "our", "us", "together", "both"];
             
@@ -472,14 +466,13 @@
                 words.forEach(w => {
                     if (weMarkers.some(m => w.includes(m))) weCount++;
                 });
-                return Math.min(1.0, (weCount * 2.5) / words.length);
+                return Math.min(1.0, (weCount * 2.5) / Math.max(1, words.length));
             };
 
             const cfi1 = calcCfi(t1);
             const cfi2 = calcCfi(t2);
             const avgCfi = (cfi1 + cfi2) / 2;
 
-            // Расчет эффекта запятой (IDR)
             const hasP1Bias = (text) => activeScenario.keywords_p1_focus.some(k => text.toLowerCase().includes(k));
             const hasP2Bias = (text) => activeScenario.keywords_p2_focus.some(k => text.toLowerCase().includes(k));
 
@@ -491,7 +484,6 @@
             return { cfi: avgCfi, idr: idr };
         }
 
-        // SRM МАТЕМАТИКА
         function calculateSynergy(v1, v2, g) {
             const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
             const gVec = new THREE.Vector3(g.x, g.y, g.z);
@@ -541,7 +533,6 @@
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            // Чтение векторов
             let p1Self = { x: 0.7, y: 0.6, z: 0.5 };
             let p1Perc = { x: 0.6, y: 0.5, z: 0.5 };
             let p2Self = { x: 0.5, y: 0.7, z: 0.6 };
@@ -561,7 +552,6 @@
             let v1 = calculateCalibratedVector(p1Self, p1Perc);
             let v2 = calculateCalibratedVector(p2Self, p2Perc);
 
-            // Чтение текстов и расчет семантики
             const t1 = localStorage.getItem(`${currentPairId}_p1_text`) || "";
             const t2 = localStorage.getItem(`${currentPairId}_p2_text`) || "";
             const metrics = analyzeSemanticTexts(t1, t2);
@@ -570,7 +560,6 @@
             document.getElementById('idr-display').innerText = metrics.idr.toFixed(2) + (metrics.idr > 0.30 ? " (Эффект запятой!)" : " (Синхрон)");
             document.getElementById('scenario-title-display').innerText = activeScenario.title;
 
-            // Если IDR высокий — стабильность Y проседает
             if (metrics.idr > 0.30) {
                 v1.y = Math.max(0.1, v1.y - 0.12);
                 v2.y = Math.max(0.1, v2.y - 0.15);
@@ -582,12 +571,13 @@
 
             document.getElementById('vol-val').innerText = vol.toFixed(4);
 
-            // Вывод рекомендаций
             const actionContainer = document.getElementById('action-steps-content');
-            actionContainer.innerHTML = `
-                <p>• <b>Партнер 1:</b> ${activeScenario.repair_a}</p>
-                <p>• <b>Партнер 2:</b> ${activeScenario.repair_b}</p>
-            `;
+            if (actionContainer) {
+                actionContainer.innerHTML = `
+                    <p>• <b>Партнер 1:</b> ${activeScenario.repair_a}</p>
+                    <p>• <b>Партнер 2:</b> ${activeScenario.repair_b}</p>
+                `;
+            }
 
             const verts = [
                 0, 0, 0,
@@ -632,9 +622,9 @@
                     modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0, 0, 0), dir.length(), hex, 0.08, 0.04));
                 }
             };
-            addVec(v1, 0xf43f5e);   // V1
-            addVec(v2, 0x38bdf8);   // V2
-            addVec(synW, 0xfbbf24); // W
+            addVec(v1, 0xf43f5e);
+            addVec(v2, 0x38bdf8);
+            addVec(synW, 0xfbbf24);
 
             function animate() {
                 animId = requestAnimationFrame(animate);
