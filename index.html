@@ -77,19 +77,21 @@
             </button>
         </div>
 
-        <!-- ШАГ 1.5: Расстановка начальных векторов (X, Y, Z, G) с живой калибровкой -->
+        <!-- ШАГ 1.5: Перекрестная калибровка векторов (Cross-check) -->
         <div id="step-vectors" class="hidden space-y-5">
             <div>
                 <span class="text-indigo-400 text-xs font-mono uppercase">Базис координат • SRM</span>
-                <h2 class="text-lg font-semibold text-white mt-1">Твой текущий вклад и ресурс</h2>
-                <p class="text-slate-400 text-xs">Двигай ползунки — подсказка покажет точный смысл выбранного уровня[cite: 2].</p>
+                <h2 id="cross-title" class="text-lg font-semibold text-white mt-1">1. Твой личный вклад (Самооценка)</h2>
+                <p id="cross-desc" class="text-slate-400 text-xs">
+                    Оценивай вклад с учетом внешнего давления (стресс, кризис, быт), а не в идеальном вакууме.
+                </p>
             </div>
 
             <div class="space-y-4 bg-slate-950/70 p-4 border border-slate-800 rounded-xl">
                 <!-- Ось X: Ресурсы -->
                 <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-rose-400 font-semibold tracking-wide">Ресурсы (X): время, финансы, бытовой вклад[cite: 2]</span>
+                        <span class="text-rose-400 font-semibold tracking-wide">Ресурсы (X): время, финансы, бытовой вклад</span>
                         <span id="label-x" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
                     <input type="range" id="input-x" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('x', this.value)" class="w-full">
@@ -101,7 +103,7 @@
                 <!-- Ось Y: Стабильность -->
                 <div class="space-y-1.5 pt-2 border-t border-slate-800/60">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-sky-400 font-semibold tracking-wide">Стабильность (Y): эмоциональный тыл, надежность[cite: 2]</span>
+                        <span class="text-sky-400 font-semibold tracking-wide">Стабильность (Y): эмоциональный тыл, надежность</span>
                         <span id="label-y" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
                     <input type="range" id="input-y" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('y', this.value)" class="w-full">
@@ -113,7 +115,7 @@
                 <!-- Ось Z: Рост -->
                 <div class="space-y-1.5 pt-2 border-t border-slate-800/60">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-emerald-400 font-semibold tracking-wide">Рост (Z): амбиции, обучение, трансформация[cite: 2]</span>
+                        <span class="text-emerald-400 font-semibold tracking-wide">Рост (Z): амбиции, обучение, трансформация</span>
                         <span id="label-z" class="font-mono text-slate-300 font-bold">0.60</span>
                     </div>
                     <input type="range" id="input-z" min="0.1" max="1.0" step="0.05" value="0.60" oninput="updateVectorHint('z', this.value)" class="w-full">
@@ -123,11 +125,11 @@
                 </div>
             </div>
 
-            <button onclick="saveVectorsAndProceed()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
-                Зафиксировать оси и перейти к чтению
+            <button id="cross-next-btn" onclick="handleCrossCheckSubmit()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white">
+                Зафиксировать самооценку → Оценить партнера
             </button>
         </div>
-
+        
         <!-- ШАГ 2: Чтение ситуации с таймером -->
         <div id="step-reading" class="hidden space-y-4 no-select" oncontextmenu="return false;">
             <div class="flex justify-between items-center text-xs text-indigo-400 font-mono">
@@ -501,6 +503,55 @@
                 }
             }
         }
+
+        // Подшаг перекрестной калибровки (1: Self, 2: Perceived)
+        let crossStep = 1;
+        let tempSelfVec = null;
+
+        function handleCrossCheckSubmit() {
+            const currentVec = {
+                x: parseFloat(document.getElementById('input-x').value) || 0.6,
+                y: parseFloat(document.getElementById('input-y').value) || 0.6,
+                z: parseFloat(document.getElementById('input-z').value) || 0.6
+            };
+
+            if (crossStep === 1) {
+                // Фиксируем самооценку и переключаем интерфейс на восприятие партнера
+                tempSelfVec = currentVec;
+                localStorage.setItem(`${currentPairId}_${myRole}_self_vec`, JSON.stringify(tempSelfVec));
+
+                crossStep = 2;
+                document.getElementById('cross-title').innerText = "2. Вклад партнера (Твой взгляд со стороны)";
+                document.getElementById('cross-desc').innerText = "Оцени, как ты сейчас воспринимаешь реальный ресурс, стабильность и рост партнера.";
+                document.getElementById('cross-next-btn').innerText = "Зафиксировать оси и перейти к чтению";
+
+                // Сбрасываем ползунки на дефолтные значения для второй половины
+                ['x', 'y', 'z'].forEach(ax => {
+                    document.getElementById(`input-${ax}`).value = 0.60;
+                    updateVectorHint(ax, 0.60);
+                });
+            } else {
+                // Фиксируем оценку партнера и идем к чтению
+                localStorage.setItem(`${currentPairId}_${myRole}_perceived_vec`, JSON.stringify(currentVec));
+                crossStep = 1; // Сброс для следующих сессий
+                goToStep('reading');
+            }
+        }
+
+        // Инженерное усреднение при расхождении > 0.20
+        function calculateCalibratedVector(selfVec, perceivedVec) {
+            const calibrateAxis = (s, p) => {
+                const delta = Math.abs(s - p);
+                return delta > 0.20 ? (s + p) / 2.0 : s;
+            };
+
+            return {
+                x: calibrateAxis(selfVec.x, perceivedVec.x),
+                y: calibrateAxis(selfVec.y, perceivedVec.y),
+                z: calibrateAxis(selfVec.z, perceivedVec.z)
+            };
+        }
+
         
     </script>
 </body>
