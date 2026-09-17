@@ -197,12 +197,12 @@
            </button>
         </div>
 
-        <!-- ШАГ 6: Экран результатов и 3D-тетраэдр -->
+       <!-- ШАГ 6: Экран результатов и 3D-тетраэдр -->
         <div id="step-result" class="hidden space-y-4">
             <div class="flex justify-between items-start border-b border-slate-800 pb-3">
                 <div>
                     <h2 class="text-base font-bold text-white uppercase tracking-wider">SRM Snapshot</h2>
-                    <p class="text-xs text-slate-400">Синхронный тетраэдр синергии пары[cite: 2]</p>
+                    <p id="scenario-title-display" class="text-xs text-indigo-400 font-mono">Аудит завершен</p>
                 </div>
                 <div class="text-right">
                     <div id="vol-val" class="text-xl font-mono font-bold text-emerald-400">0.0000</div>
@@ -210,25 +210,75 @@
                 </div>
             </div>
 
+            <!-- 3D сцена -->
             <div id="canvas-container" class="w-full h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative"></div>
 
-            <div class="p-3 bg-slate-950/60 border border-slate-800/60 rounded-lg text-xs space-y-1">
-                <div class="text-indigo-400 font-semibold font-mono">СЕМАНТИЧЕСКИЙ АУДИТ (CFI / IDR)[cite: 1]:</div>
-                <p id="audit-feedback" class="text-slate-300">
-                    Оба партнера завершили шаг. Анализ семантических примитивов показал синхронизацию векторов[cite: 1, 2].
-                </p>
+            <!-- Метрики CFI / IDR -->
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div class="p-2.5 bg-slate-950/80 border border-slate-800 rounded-lg">
+                    <div class="text-slate-400 text-[10px]">КООПЕРАЦИЯ (CFI)</div>
+                    <div id="cfi-display" class="text-sm font-bold text-slate-200 mt-0.5">0.00</div>
+                </div>
+                <div class="p-2.5 bg-slate-950/80 border border-slate-800 rounded-lg">
+                    <div class="text-slate-400 text-[10px]">РАСХОЖДЕНИЕ (IDR)</div>
+                    <div id="idr-display" class="text-sm font-bold text-slate-200 mt-0.5">0.00</div>
+                </div>
             </div>
 
-            <p class="text-center text-slate-500 text-[11px]">Следующая калибровка откроется через 24 часа.</p>
+            <!-- Инструкция по ремонту (Zero Protocol Action Steps) -->
+            <div class="p-3.5 bg-slate-950/90 border border-indigo-950/80 rounded-xl text-xs space-y-2">
+                <div class="text-indigo-400 font-semibold font-mono tracking-wide flex items-center gap-1.5">
+                    <span>🛠️</span> РЕГЛАМЕНТ РЕМОНТА (SAWTOOTH MAINTENANCE):
+                </div>
+                <div id="action-steps-content" class="text-slate-300 leading-relaxed space-y-1 text-[11px]">
+                    <!-- Генерируется динамически -->
+                </div>
+            </div>
+
+            <p class="text-center text-slate-500 text-[11px]">Плановая сессия калибровки: 1 раз в 3 месяца.</p>
         </div>
 
     </div>
 
     <script>
-       let currentPairId = 'a51-demo';
+        // БАНК СЦЕНАРИЕВ
+        const SCENARIOS = [
+            {
+                id: "priority_conflict",
+                title: "Сценарий 1: The Priority Conflict (Обязательство vs Карьера)",
+                text: "Семья три месяца планировала четырехдневную поездку к морю, чтобы восстановиться после тяжелого квартала. Билеты выкуплены, апартаменты оплачены, вещи собраны. В пятницу в полдень одному из партнеров поступает срочный звонок от ключевого клиента с предложением возглавить высокобюджетный проект. Это гарантирует солидный финансовый бонус и мощный карьерный скачок, но требует непрерывной работы все выходные. Окончательный ответ необходимо дать в течение тридцати минут.",
+                keywords_p1_focus: ["карьер", "проект", "шанс", "деньг", "бонус", "рост", "будущ", "opportunit", "career", "money"],
+                keywords_p2_focus: ["отдых", "поездк", "договор", "билет", "чемодан", "обещан", "нечестн", "trip", "break", "commit"],
+                repair_a: "Для партнера в фокусе Карьеры (Стабилизирующий базис): не продавливать решение ультимативно, а вернуть баланс по оси Стабильности Y через компенсацию («Мы переносим поездку на следующие выходные, а с бонуса повышаем уровень отеля»).",
+                repair_b: "Для второго партнера (Демпфирование эмоций γ < 1): взять паузу перед реакцией, не эскалировать конфликт обвинениями в эгоизме, обсудить условия совместной выгоды от проекта."
+            },
+            {
+                id: "spatial_tradeoff",
+                title: "Сценарий 2: The Spatial Trade-Off (Дистанция vs Рутина)",
+                text: "После двух лет стабильной совместной жизни одному из партнеров предлагают престижную трехмесячную стажировку в другом городе. Предложение включает крупную стипендию и отличные перспективы, но означает временную разлуку и перекладывание всех бытовых вопросов на второго партнера. Контракт нужно подписать до утра понедельника.",
+                keywords_p1_focus: ["стажировк", "перспектив", "город", "развити", "стипенди", "fellowship", "growth"],
+                keywords_p2_focus: ["быт", "разлук", "один", "тяжело", "остаться", "нагрузк", "alone", "chores"],
+                repair_a: "Для партнера на стажировке: продумать практическую разгрузку быта для оставшегося партнера (клининг, заказ доставки, регулярные визиты).",
+                repair_b: "Для остающегося партнера: зафиксировать временность статуса и рассматривать этап как инвестицию в общее долгосрочное благополучие."
+            },
+            {
+                id: "resource_dilemma",
+                title: "Сценарий 3: The Resource Dilemma (Семья vs Свой дом)",
+                text: "Пара в течение года копила средства на первоначальный взнос за собственное жилье. Внезапно близкий родственник одного из партнеров оказывается в остром финансовом кризисе, требующем срочной помощи в размере половины накоплений. Возврат долга бессрочный. Помощь отодвинет покупку жилья минимум на год.",
+                keywords_p1_focus: ["родственник", "долг", "помощь", "семь", "кризис", "family", "help", "loan"],
+                keywords_p2_focus: ["жиль", "взнос", "накоплен", "несправедлив", "год", "дом", "house", "savings"],
+                repair_a: "Для партнера, чья родня требует помощи: оформить четкие сроки и юридические рамки возврата, не делать из этого безоговорочную жертву.",
+                repair_b: "Для второго партнера: признать ценность семейной солидарности, но зафиксировать неприкосновенный минимум финансовой безопасности."
+            }
+        ];
+
+        let currentPairId = 'a51-demo';
         let myRole = 'p1';
         let animId = null;
+        let crossStep = 1;
+        let activeScenario = SCENARIOS[0];
 
+        // Инициализация сессии и синхронизация сценария
         window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1);
             if (hash.startsWith('pair=')) {
@@ -239,7 +289,23 @@
                 if (createEl) createEl.classList.add('hidden');
                 if (joinEl) joinEl.classList.remove('hidden');
             }
+
+            // Выбираем сценарий на основе хеша пары (детерминированно для двоих)
+            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
+            activeScenario = SCENARIOS[scenarioIndex];
+
+            const readingBox = document.getElementById('reading-box');
+            if (readingBox) readingBox.innerText = activeScenario.text;
         });
+
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash;
+        }
 
         function initNewPair() {
             currentPairId = 'a51-' + Math.random().toString(36).substring(2, 8);
@@ -247,6 +313,10 @@
             document.getElementById('share-link-display').innerText = shareUrl;
             document.getElementById('create-room-block').classList.add('hidden');
             document.getElementById('invite-block').classList.remove('hidden');
+
+            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
+            activeScenario = SCENARIOS[scenarioIndex];
+            document.getElementById('reading-box').innerText = activeScenario.text;
         }
 
         function copyShareLink() {
@@ -270,27 +340,68 @@
             });
 
             const target = document.getElementById('step-' + step);
-            if (target) {
-                target.classList.remove('hidden');
-            }
+            if (target) target.classList.remove('hidden');
 
             if (step === 'reading') startReadingTimer();
             if (step === 'result') {
-                // Запуск рендера с гарантией отрисовки контейнера
                 requestAnimationFrame(() => {
                     setTimeout(initThreeScene, 100);
                 });
             }
         }
 
-        function saveVectorsAndProceed() {
-            const vec = {
-                x: parseFloat(document.getElementById('input-x').value) || 0.7,
+        function updateVectorHint(axis, val) {
+            const num = parseFloat(val);
+            document.getElementById(`label-${axis}`).innerText = num.toFixed(2);
+            const hintEl = document.getElementById(`hint-${axis}`);
+
+            if (axis === 'x') {
+                hintEl.innerText = num <= 0.35 ? "Ресурсная яма: тяну быт/финансы с трудом, сил и времени почти нет." :
+                                   num <= 0.70 ? "Закрываю свою половину обязательств, вклад стабильный, но без запаса." :
+                                                 "Ресурсный локомотив: инвестирую максимум времени, средств и энергии.";
+            } else if (axis === 'y') {
+                hintEl.innerText = num <= 0.35 ? "Эмоциональные качели: высокая фоновая тревога, договоренности плывут." :
+                                   num <= 0.70 ? "Предсказуемый партнер, держу обещания, если нет жесткого форс-мажора." :
+                                                 "Железобетонная опора: гашу панику, партнер чувствует себя в безопасности.";
+            } else if (axis === 'z') {
+                hintEl.innerText = num <= 0.35 ? "День сурка: устраивает текущее положение, учиться новому нет ресурса." :
+                                   num <= 0.70 ? "Умеренный рост: читаю, понемногу развиваюсь в профессии без резких скачков." :
+                                                 "Драйвер перемен: масштабирую цели, веду пару к новому статусу.";
+            }
+        }
+
+        function handleCrossCheckSubmit() {
+            const currentVec = {
+                x: parseFloat(document.getElementById('input-x').value) || 0.6,
                 y: parseFloat(document.getElementById('input-y').value) || 0.6,
-                z: parseFloat(document.getElementById('input-z').value) || 0.5
+                z: parseFloat(document.getElementById('input-z').value) || 0.6
             };
-            localStorage.setItem(`${currentPairId}_${myRole}_vec`, JSON.stringify(vec));
-            goToStep('reading');
+
+            if (crossStep === 1) {
+                localStorage.setItem(`${currentPairId}_${myRole}_self_vec`, JSON.stringify(currentVec));
+                crossStep = 2;
+                document.getElementById('cross-title').innerText = "2. Вклад партнера (Твой взгляд со стороны)";
+                document.getElementById('cross-desc').innerText = "Оцени реальный вклад второй половины с учетом текущего фонового стресса.";
+                document.getElementById('cross-next-btn').innerText = "Зафиксировать оси и перейти к чтению";
+
+                ['x', 'y', 'z'].forEach(ax => {
+                    document.getElementById(`input-${ax}`).value = 0.60;
+                    updateVectorHint(ax, 0.60);
+                });
+            } else {
+                localStorage.setItem(`${currentPairId}_${myRole}_perceived_vec`, JSON.stringify(currentVec));
+                crossStep = 1;
+                goToStep('reading');
+            }
+        }
+
+        function calculateCalibratedVector(selfVec, perceivedVec) {
+            const calibrateAxis = (s, p) => (Math.abs(s - p) > 0.20 ? (s + p) / 2.0 : s);
+            return {
+                x: calibrateAxis(selfVec.x, perceivedVec.x),
+                y: calibrateAxis(selfVec.y, perceivedVec.y),
+                z: calibrateAxis(selfVec.z, perceivedVec.z)
+            };
         }
 
         function startReadingTimer() {
@@ -341,16 +452,46 @@
             }
         }
 
-        // Кнопка для обхода ожидания при тестировании в одиночку
         function simulatePartnerAction() {
-            localStorage.setItem(`${currentPairId}_p1_text`, 'Партнер 1 пересказ зафиксирован тестовыми данными...');
-            localStorage.setItem(`${currentPairId}_p2_text`, 'Партнер 2 пересказ зафиксирован тестовыми данными...');
-            localStorage.setItem(`${currentPairId}_p1_vec`, JSON.stringify({ x: 0.8, y: 0.6, z: 0.5 }));
-            localStorage.setItem(`${currentPairId}_p2_vec`, JSON.stringify({ x: 0.4, y: 0.7, z: 0.6 }));
+            localStorage.setItem(`${currentPairId}_p1_text`, "Мы планировали совместный отдых, но внезапно появился шанс на проект, который поможет нашему будущему. Нужно найти способ договориться.");
+            localStorage.setItem(`${currentPairId}_p2_text`, "Он получил предложение по работе и решил бросить все наши договоренности ради денег. Это нечестно по отношению ко мне.");
+            localStorage.setItem(`${currentPairId}_p1_self_vec`, JSON.stringify({ x: 0.8, y: 0.6, z: 0.7 }));
+            localStorage.setItem(`${currentPairId}_p1_perceived_vec`, JSON.stringify({ x: 0.5, y: 0.6, z: 0.5 }));
+            localStorage.setItem(`${currentPairId}_p2_self_vec`, JSON.stringify({ x: 0.5, y: 0.7, z: 0.5 }));
+            localStorage.setItem(`${currentPairId}_p2_perceived_vec`, JSON.stringify({ x: 0.7, y: 0.5, z: 0.6 }));
             goToStep('result');
         }
 
-        // SRM Математика
+        // ЛИНГВИСТИЧЕСКИЙ АНАЛИЗАТОР (CFI & IDR)
+        function analyzeSemanticTexts(t1, t2) {
+            const weMarkers = ["мы", "наш", "нас", "нам", "вместе", "обоим", "сообща", "we", "our", "us", "together", "both"];
+            
+            const calcCfi = (text) => {
+                const words = text.toLowerCase().split(/\s+/);
+                let weCount = 0;
+                words.forEach(w => {
+                    if (weMarkers.some(m => w.includes(m))) weCount++;
+                });
+                return Math.min(1.0, (weCount * 2.5) / words.length);
+            };
+
+            const cfi1 = calcCfi(t1);
+            const cfi2 = calcCfi(t2);
+            const avgCfi = (cfi1 + cfi2) / 2;
+
+            // Расчет эффекта запятой (IDR)
+            const hasP1Bias = (text) => activeScenario.keywords_p1_focus.some(k => text.toLowerCase().includes(k));
+            const hasP2Bias = (text) => activeScenario.keywords_p2_focus.some(k => text.toLowerCase().includes(k));
+
+            let mismatch = 0;
+            if (hasP1Bias(t1) !== hasP1Bias(t2)) mismatch++;
+            if (hasP2Bias(t1) !== hasP2Bias(t2)) mismatch++;
+            const idr = mismatch > 0 ? (mismatch === 2 ? 1.0 : 0.5) : 0.15;
+
+            return { cfi: avgCfi, idr: idr };
+        }
+
+        // SRM МАТЕМАТИКА
         function calculateSynergy(v1, v2, g) {
             const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
             const gVec = new THREE.Vector3(g.x, g.y, g.z);
@@ -373,7 +514,6 @@
             const container = document.getElementById('canvas-container');
             if (!container) return;
 
-            // Если анимация уже шла — глушим ее
             if (animId) cancelAnimationFrame(animId);
             container.innerHTML = '';
 
@@ -401,34 +541,53 @@
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            // Исходные значения по умолчанию
+            // Чтение векторов
             let p1Self = { x: 0.7, y: 0.6, z: 0.5 };
-            let p1PerceivedByP2 = { x: 0.6, y: 0.5, z: 0.5 };
+            let p1Perc = { x: 0.6, y: 0.5, z: 0.5 };
             let p2Self = { x: 0.5, y: 0.7, z: 0.6 };
-            let p2PerceivedByP1 = { x: 0.5, y: 0.6, z: 0.7 };
+            let p2Perc = { x: 0.5, y: 0.6, z: 0.7 };
 
-            // Загрузка данных перекрестной оценки (Cross-check)
             try {
                 const s1 = localStorage.getItem(`${currentPairId}_p1_self_vec`);
-                const perc1 = localStorage.getItem(`${currentPairId}_p2_perceived_vec`);
+                const pr1 = localStorage.getItem(`${currentPairId}_p2_perceived_vec`);
                 const s2 = localStorage.getItem(`${currentPairId}_p2_self_vec`);
-                const perc2 = localStorage.getItem(`${currentPairId}_p1_perceived_vec`);
-
+                const pr2 = localStorage.getItem(`${currentPairId}_p1_perceived_vec`);
                 if (s1) p1Self = JSON.parse(s1);
-                if (perc1) p1PerceivedByP2 = JSON.parse(perc1);
+                if (pr1) p1Perc = JSON.parse(pr1);
                 if (s2) p2Self = JSON.parse(s2);
-                if (perc2) p2PerceivedByP1 = JSON.parse(perc2);
+                if (pr2) p2Perc = JSON.parse(pr2);
             } catch(e) {}
 
-            // Инженерная калибровка векторов: если расхождение > 0.20, берется среднее
-            const v1 = calculateCalibratedVector(p1Self, p1PerceivedByP2);
-            const v2 = calculateCalibratedVector(p2Self, p2PerceivedByP1);
+            let v1 = calculateCalibratedVector(p1Self, p1Perc);
+            let v2 = calculateCalibratedVector(p2Self, p2Perc);
+
+            // Чтение текстов и расчет семантики
+            const t1 = localStorage.getItem(`${currentPairId}_p1_text`) || "";
+            const t2 = localStorage.getItem(`${currentPairId}_p2_text`) || "";
+            const metrics = analyzeSemanticTexts(t1, t2);
+
+            document.getElementById('cfi-display').innerText = metrics.cfi.toFixed(2) + (metrics.cfi >= 0.51 ? " (Зона стабильности)" : " (Эгоцентризм)");
+            document.getElementById('idr-display').innerText = metrics.idr.toFixed(2) + (metrics.idr > 0.30 ? " (Эффект запятой!)" : " (Синхрон)");
+            document.getElementById('scenario-title-display').innerText = activeScenario.title;
+
+            // Если IDR высокий — стабильность Y проседает
+            if (metrics.idr > 0.30) {
+                v1.y = Math.max(0.1, v1.y - 0.12);
+                v2.y = Math.max(0.1, v2.y - 0.15);
+            }
 
             const goalG = { x: 0.70, y: 0.60, z: 0.80 };
             const synW = calculateSynergy(v1, v2, goalG);
             const vol = calculateVolume(v1, v2, synW);
 
             document.getElementById('vol-val').innerText = vol.toFixed(4);
+
+            // Вывод рекомендаций
+            const actionContainer = document.getElementById('action-steps-content');
+            actionContainer.innerHTML = `
+                <p>• <b>Партнер 1:</b> ${activeScenario.repair_a}</p>
+                <p>• <b>Партнер 2:</b> ${activeScenario.repair_b}</p>
+            `;
 
             const verts = [
                 0, 0, 0,
@@ -445,8 +604,8 @@
 
             let col = 0x10b981;
             let statText = "HEALTHY";
-            if (vol < 0.025) { col = 0xf59e0b; statText = "WARNING"; }
-            if (vol < 0.015) { col = 0xef4444; statText = "CHECK ENGINE"; }
+            if (vol < 0.025 || metrics.idr > 0.4) { col = 0xf59e0b; statText = "WARNING"; }
+            if (vol < 0.015 || metrics.idr >= 0.8) { col = 0xef4444; statText = "CHECK ENGINE"; }
 
             const statusTag = document.getElementById('status-tag');
             if (statusTag) {
@@ -473,9 +632,9 @@
                     modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0, 0, 0), dir.length(), hex, 0.08, 0.04));
                 }
             };
-            addVec(v1, 0xf43f5e);   // V1 (Партнер 1)
-            addVec(v2, 0x38bdf8);   // V2 (Партнер 2)
-            addVec(synW, 0xfbbf24); // W (Синергия к цели G)
+            addVec(v1, 0xf43f5e);   // V1
+            addVec(v2, 0x38bdf8);   // V2
+            addVec(synW, 0xfbbf24); // W
 
             function animate() {
                 animId = requestAnimationFrame(animate);
@@ -484,90 +643,6 @@
             }
             animate();
         }
-
-        
-        // Живые подсказки под ползунками калибровки векторов
-        function updateVectorHint(axis, val) {
-            const num = parseFloat(val);
-            document.getElementById(`label-${axis}`).innerText = num.toFixed(2);
-            const hintEl = document.getElementById(`hint-${axis}`);
-
-            if (axis === 'x') {
-                if (num <= 0.35) {
-                    hintEl.innerText = "Ресурсная яма: тяну быт/финансы с трудом, сил и свободного времени почти нет.";
-                } else if (num <= 0.70) {
-                    hintEl.innerText = "Закрываю свою половину обязательств, вклад стабильный, но без запаса.";
-                } else {
-                    hintEl.innerText = "Ресурсный локомотив: инвестирую максимум времени, средств и энергии в контур пары.";
-                }
-            } else if (axis === 'y') {
-                if (num <= 0.35) {
-                    hintEl.innerText = "Эмоциональные качели: высокая фоновая тревога, срывы, договоренности плывут.";
-                } else if (num <= 0.70) {
-                    hintEl.innerText = "Предсказуемый партнер, держу обещания, если нет жесткого форс-мажора.";
-                } else {
-                    hintEl.innerText = "Железобетонная опора: гашу панику, даю партнеру ощущение абсолютной безопасности.";
-                }
-            } else if (axis === 'z') {
-                if (num <= 0.35) {
-                    hintEl.innerText = "День сурка: консервирую текущий уют, учиться новому нет ни сил, ни желания.";
-                } else if (num <= 0.70) {
-                    hintEl.innerText = "Умеренный рост: читаю, понемногу развиваюсь в профессии, без резких скачков.";
-                } else {
-                    hintEl.innerText = "Драйвер перемен: масштабирую цели, тащу обоих на новый социальный и ментальный уровень.";
-                }
-            }
-        }
-
-        // Подшаг перекрестной калибровки (1: Self, 2: Perceived)
-        let crossStep = 1;
-        let tempSelfVec = null;
-
-        function handleCrossCheckSubmit() {
-            const currentVec = {
-                x: parseFloat(document.getElementById('input-x').value) || 0.6,
-                y: parseFloat(document.getElementById('input-y').value) || 0.6,
-                z: parseFloat(document.getElementById('input-z').value) || 0.6
-            };
-
-            if (crossStep === 1) {
-                // Фиксируем самооценку и переключаем интерфейс на восприятие партнера
-                tempSelfVec = currentVec;
-                localStorage.setItem(`${currentPairId}_${myRole}_self_vec`, JSON.stringify(tempSelfVec));
-
-                crossStep = 2;
-                document.getElementById('cross-title').innerText = "2. Вклад партнера (Твой взгляд со стороны)";
-                document.getElementById('cross-desc').innerText = "Оцени, как ты сейчас воспринимаешь реальный ресурс, стабильность и рост партнера.";
-                document.getElementById('cross-next-btn').innerText = "Зафиксировать оси и перейти к чтению";
-
-                // Сбрасываем ползунки на дефолтные значения для второй половины
-                ['x', 'y', 'z'].forEach(ax => {
-                    document.getElementById(`input-${ax}`).value = 0.60;
-                    updateVectorHint(ax, 0.60);
-                });
-            } else {
-                // Фиксируем оценку партнера и идем к чтению
-                localStorage.setItem(`${currentPairId}_${myRole}_perceived_vec`, JSON.stringify(currentVec));
-                crossStep = 1; // Сброс для следующих сессий
-                goToStep('reading');
-            }
-        }
-
-        // Инженерное усреднение при расхождении > 0.20
-        function calculateCalibratedVector(selfVec, perceivedVec) {
-            const calibrateAxis = (s, p) => {
-                const delta = Math.abs(s - p);
-                return delta > 0.20 ? (s + p) / 2.0 : s;
-            };
-
-            return {
-                x: calibrateAxis(selfVec.x, perceivedVec.x),
-                y: calibrateAxis(selfVec.y, perceivedVec.y),
-                z: calibrateAxis(selfVec.z, perceivedVec.z)
-            };
-        }
-
-        
     </script>
 </body>
 </html>
