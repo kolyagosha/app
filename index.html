@@ -401,14 +401,28 @@
             modelGroup = new THREE.Group();
             scene.add(modelGroup);
 
-            let v1 = { x: 0.7, y: 0.6, z: 0.5 };
-            let v2 = { x: 0.5, y: 0.7, z: 0.6 };
+            // Исходные значения по умолчанию
+            let p1Self = { x: 0.7, y: 0.6, z: 0.5 };
+            let p1PerceivedByP2 = { x: 0.6, y: 0.5, z: 0.5 };
+            let p2Self = { x: 0.5, y: 0.7, z: 0.6 };
+            let p2PerceivedByP1 = { x: 0.5, y: 0.6, z: 0.7 };
+
+            // Загрузка данных перекрестной оценки (Cross-check)
             try {
-                const s1 = localStorage.getItem(`${currentPairId}_p1_vec`);
-                const s2 = localStorage.getItem(`${currentPairId}_p2_vec`);
-                if (s1) v1 = JSON.parse(s1);
-                if (s2) v2 = JSON.parse(s2);
+                const s1 = localStorage.getItem(`${currentPairId}_p1_self_vec`);
+                const perc1 = localStorage.getItem(`${currentPairId}_p2_perceived_vec`);
+                const s2 = localStorage.getItem(`${currentPairId}_p2_self_vec`);
+                const perc2 = localStorage.getItem(`${currentPairId}_p1_perceived_vec`);
+
+                if (s1) p1Self = JSON.parse(s1);
+                if (perc1) p1PerceivedByP2 = JSON.parse(perc1);
+                if (s2) p2Self = JSON.parse(s2);
+                if (perc2) p2PerceivedByP1 = JSON.parse(perc2);
             } catch(e) {}
+
+            // Инженерная калибровка векторов: если расхождение > 0.20, берется среднее
+            const v1 = calculateCalibratedVector(p1Self, p1PerceivedByP2);
+            const v2 = calculateCalibratedVector(p2Self, p2PerceivedByP1);
 
             const goalG = { x: 0.70, y: 0.60, z: 0.80 };
             const synW = calculateSynergy(v1, v2, goalG);
@@ -422,7 +436,7 @@
                 v2.x, v2.y, v2.z,
                 synW.x, synW.y, synW.z
             ];
-            const indices = [0,2,1, 0,3,2, 0,1,3, 1,2,3];
+            const indices = [0, 2, 1,  0, 3, 2,  0, 1, 3,  1, 2, 3];
 
             const geo = new THREE.BufferGeometry();
             geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
@@ -456,12 +470,12 @@
             const addVec = (v, hex) => {
                 const dir = new THREE.Vector3(v.x, v.y, v.z);
                 if (dir.length() > 0) {
-                    modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0,0,0), dir.length(), hex, 0.08, 0.04));
+                    modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0, 0, 0), dir.length(), hex, 0.08, 0.04));
                 }
             };
-            addVec(v1, 0xf43f5e);
-            addVec(v2, 0x38bdf8);
-            addVec(synW, 0xfbbf24);
+            addVec(v1, 0xf43f5e);   // V1 (Партнер 1)
+            addVec(v2, 0x38bdf8);   // V2 (Партнер 2)
+            addVec(synW, 0xfbbf24); // W (Синергия к цели G)
 
             function animate() {
                 animId = requestAnimationFrame(animate);
@@ -471,6 +485,7 @@
             animate();
         }
 
+        
         // Живые подсказки под ползунками калибровки векторов
         function updateVectorHint(axis, val) {
             const num = parseFloat(val);
