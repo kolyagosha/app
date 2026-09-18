@@ -15,6 +15,22 @@
         }
     </style>
 </head>
+
+<header>
+    <!-- Global Persistent Header -->
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-indigo-400 text-xs font-mono font-bold tracking-wider uppercase">SRM • Area 51</span>
+            
+            <div class="flex items-center gap-2">
+                <!-- Экстренная кнопка доступна всегда и отовсюду -->
+                <button type="button" onclick="triggerAcuteStressEvent()" title="Emergency Recalibration" class="text-[11px] font-mono font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 px-2.5 py-1 rounded-lg transition flex items-center gap-1 shadow-sm">
+                    <span>⚡</span> <span>Crisis (E_ext)</span>
+                </button>
+                <span class="text-[10px] font-mono text-slate-500 uppercase px-2 py-1 rounded border border-slate-800">EN</span>
+            </div>
+        </div>
+</header>
+    
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
