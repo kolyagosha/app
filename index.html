@@ -252,11 +252,7 @@
                     </button>
                 </div>
 
-                <div class="pt-1 border-t border-slate-900">
-                    <button type="button" onclick="triggerAcuteStressEvent()" class="w-full py-2 px-2.5 bg-rose-950/30 hover:bg-rose-900/50 border border-rose-900/50 text-rose-300 rounded-lg font-medium text-[10px] transition text-center flex items-center justify-center gap-1.5">
-                        ⚡ Log Acute Stressor (E_ext) → Force Immediate Recalibration
-                    </button>
-                </div>
+                
             </div>
 
             <p class="text-center text-slate-500 text-[11px]">Area 51 Dyadic Engine • Calibration cycle: once every 3 months.</p>
@@ -802,12 +798,19 @@
         }
 
         // 4. Внеплановый сброс при внешнем стрессе E_ext
-        function triggerAcuteStressEvent() {
-            const confirmed = confirm("Log an acute external stressor (E_ext) such as sudden relocation, career shock, or family crisis?\n\nThis will initiate an immediate emergency recalibration session.");
+       function triggerAcuteStressEvent() {
+            const confirmed = confirm("Activate Crisis Protocol (E_ext)?\n\nThis will bypass standard routines and immediately launch an unscheduled dyadic calibration session.");
             if (confirmed) {
-                // Сбрасываем пересказы для новой калибровки, сохраняя историю
+                // Сбрасываем старые пересказы текущей сессии
                 localStorage.removeItem(`${currentPairId}_p1_text`);
                 localStorage.removeItem(`${currentPairId}_p2_text`);
+                
+                // Переходим напрямую к калибровке векторов
+                crossStep = 1;
+                document.getElementById('cross-title').innerText = "1. Emergency Self-Assessment (E_ext)";
+                document.getElementById('cross-desc').innerText = "Assess your current operational capacity taking into account the acute external stressor.";
+                document.getElementById('cross-next-btn').innerText = "Lock Baseline → Evaluate Partner";
+                
                 goToStep('vectors');
             }
         }
