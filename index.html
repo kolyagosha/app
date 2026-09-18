@@ -322,6 +322,7 @@
             allSteps.forEach(s => {
                 const el = document.getElementById('step-' + s);
                 if (el) el.classList.add('hidden');
+                if (step === 'distractor') renderDistractorStep();
             });
 
             const target = document.getElementById('step-' + step);
