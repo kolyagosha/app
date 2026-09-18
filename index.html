@@ -140,12 +140,23 @@
             <p class="text-slate-500 text-xs text-center">Read carefully. The text will dissolve when the timer expires.</p>
         </div>
 
-        <!-- STEP 3: Distractor Task -->
-        <div id="step-distractor" class="hidden space-y-4 text-center">
-            <h2 class="text-base font-bold text-white">Cognitive Buffer</h2>
-            <p class="text-slate-400 text-xs">A short pause to decouple rote verbatim memory before narrative projection.</p>
-            <button onclick="goToStep('recall')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
-                Proceed to Narrative Recall →
+       <!-- STEP 3: Cognitive Buffer & Dynamic Partner Attunement -->
+        <div id="step-distractor" class="hidden space-y-4">
+            <div>
+                <span class="text-indigo-400 text-xs font-mono uppercase">Cognitive Buffer • Focus Shift</span>
+                <h2 class="text-lg font-semibold text-white mt-1">Attunement Check</h2>
+                <p class="text-slate-400 text-xs">
+                    Answer these 3 quick calibration questions about your partner to clear working memory.
+                </p>
+            </div>
+
+            <!-- Сюда JS динамически вставит 3 вопроса по одному из каждой группы -->
+            <div id="distractor-questions-container" class="space-y-3 bg-slate-950/70 p-4 border border-slate-800 rounded-xl text-xs">
+                <div class="text-slate-500 italic text-center py-2">Loading attunement questions...</div>
+            </div>
+
+            <button id="distractor-next-btn" disabled onclick="submitDistractor()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition text-white text-sm">
+                Complete Buffer → Proceed to Recall
             </button>
         </div>
 
@@ -281,6 +292,7 @@
                 if (joinEl) joinEl.classList.remove('hidden');
             }
             await loadScenariosAndSync();
+            await loadQuizData();
         });
 
         function initNewPair() {
@@ -611,6 +623,72 @@
             }
             animate();
         }
+
+        let QUIZ_DATA = null;
+        let selectedQuizQuestions = [];
+
+        // Загрузка вопросов
+        async function loadQuizData() {
+            try {
+                const res = await fetch('quiz.json');
+                if (res.ok) {
+                    QUIZ_DATA = await res.json();
+                }
+            } catch (e) {
+                console.warn("Quiz load fallback activated", e);
+            }
+        }
+
+        // Вызывается при переходе на шаг distractor
+        function renderDistractorStep() {
+            const container = document.getElementById('distractor-questions-container');
+            if (!container) return;
+
+            // Если JSON не загрузился или пустой — резервный дефолт
+            if (!QUIZ_DATA) {
+                container.innerHTML = `<p class="text-slate-400 text-center py-2">Buffer initialized. Click continue when ready.</p>`;
+                document.getElementById('distractor-next-btn').disabled = false;
+                return;
+            }
+
+            // Берем строго по 1 случайному вопросу из каждой группы
+            const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            selectedQuizQuestions = [
+                pickRandom(QUIZ_DATA.group_1),
+                pickRandom(QUIZ_DATA.group_2),
+                pickRandom(QUIZ_DATA.group_3)
+            ];
+
+            container.innerHTML = selectedQuizQuestions.map((q, idx) => `
+                <div class="space-y-1.5 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}">
+                    <label class="text-slate-300 font-medium">${idx + 1}. ${q.question}</label>
+                    <select id="distract-q-${idx}" onchange="validateDynamicDistractor()" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="">Select an option...</option>
+                        ${q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                </div>
+            `).join('');
+
+            document.getElementById('distractor-next-btn').disabled = true;
+        }
+
+        function validateDynamicDistractor() {
+            const allAnswered = selectedQuizQuestions.every((_, idx) => {
+                const el = document.getElementById(`distract-q-${idx}`);
+                return el && el.value !== "";
+            });
+            document.getElementById('distractor-next-btn').disabled = !allAnswered;
+        }
+
+        function submitDistractor() {
+            const answers = selectedQuizQuestions.map((q, idx) => ({
+                question_id: q.id,
+                answer: document.getElementById(`distract-q-${idx}`).value
+            }));
+            localStorage.setItem(`${currentPairId}_${myRole}_distractor_answers`, JSON.stringify(answers));
+            goToStep('recall');
+        }
+        
     </script>
 
 
