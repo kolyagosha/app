@@ -213,16 +213,37 @@
                 </div>
             </div>
 
-            <!-- Sawtooth Action Steps -->
-            <div class="p-3.5 bg-slate-950/90 border border-indigo-950/80 rounded-xl text-xs space-y-2">
-                <div class="text-indigo-400 font-semibold font-mono tracking-wide flex items-center gap-1.5">
-                    <span>🛠️</span> SAWTOOTH MAINTENANCE PROTOCOL:
+           <!-- Sawtooth Maintenance Protocol & 90-Day Reminder -->
+            <div class="p-3.5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-3 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-indigo-400 font-mono font-semibold tracking-wide flex items-center gap-1.5">
+                        <span>⏱️</span> NEXT CALIBRATION WINDOW
+                    </span>
+                    <span id="next-date-badge" class="font-mono text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-900/60 text-[11px]">In 90 Days</span>
                 </div>
-                <div id="action-steps-content" class="text-slate-300 leading-relaxed space-y-1 text-[11px]"></div>
+                
+                <p class="text-slate-400 text-[11px] leading-relaxed">
+                    Dyadic alignment naturally degrades under routine entropy. Scheduled maintenance window: <b id="exact-date-text" class="text-slate-200">...</b>
+                </p>
+
+                <!-- Actions: Push, Calendar, Emergency Stress -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button" id="push-btn" onclick="requestPushNotificationPermission()" class="py-2 px-2 bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-800/60 text-indigo-300 rounded-lg font-medium text-[11px] transition text-center flex items-center justify-center gap-1">
+                        🔔 Enable Push Reminder
+                    </button>
+                    <button type="button" onclick="addToCalendarAction()" class="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium text-[11px] transition text-center flex items-center justify-center gap-1">
+                        📅 Add to Calendar
+                    </button>
+                </div>
+
+                <div class="pt-1 border-t border-slate-900">
+                    <button type="button" onclick="triggerAcuteStressEvent()" class="w-full py-2 px-2.5 bg-rose-950/30 hover:bg-rose-900/50 border border-rose-900/50 text-rose-300 rounded-lg font-medium text-[10px] transition text-center flex items-center justify-center gap-1.5">
+                        ⚡ Log Acute Stressor (E_ext) → Force Immediate Recalibration
+                    </button>
+                </div>
             </div>
 
-            <p class="text-center text-slate-500 text-[11px]">Scheduled calibration cycle: once every 3 months.</p>
-        </div>
+            <p class="text-center text-slate-500 text-[11px]">Area 51 Dyadic Engine • Calibration cycle: once every 3 months.</p>
     </div>
 
     <script>
@@ -684,6 +705,7 @@
             addVec(v1, 0xf43f5e);
             addVec(v2, 0x38bdf8);
             addVec(synW, 0xfbbf24);
+            calculateNextMaintenance();
 
             function animate() {
                 animId = requestAnimationFrame(animate);
@@ -692,6 +714,89 @@
             }
             animate();
         }
+
+        // 1. Расчет плановой даты через 90 дней
+        function calculateNextMaintenance() {
+            const now = new Date();
+            const nextCycle = new Date(now.getTime() + (90 * 24 * 60 * 60 * 1000));
+            
+            localStorage.setItem(`${currentPairId}_last_session`, now.toISOString());
+            localStorage.setItem(`${currentPairId}_next_session`, nextCycle.toISOString());
+
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            const formattedDate = nextCycle.toLocaleDateString('en-US', options);
+
+            const dateEl = document.getElementById('exact-date-text');
+            if (dateEl) dateEl.innerText = formattedDate;
+
+            // Проверяем текущий статус разрешения пушей
+            checkNotificationStatus();
+        }
+
+        // 2. Системный запрос на Push-уведомления
+        function checkNotificationStatus() {
+            const btn = document.getElementById('push-btn');
+            if (!btn || !("Notification" in window)) return;
+
+            if (Notification.permission === "granted") {
+                btn.innerText = "✅ Push Active";
+                btn.disabled = true;
+                btn.classList.replace("text-indigo-300", "text-emerald-400");
+            }
+        }
+
+        async function requestPushNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop or mobile push notifications.");
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            const btn = document.getElementById('push-btn');
+
+            if (permission === "granted") {
+                btn.innerText = "✅ Push Active";
+                btn.disabled = true;
+                btn.classList.replace("text-indigo-300", "text-emerald-400");
+
+                // Тестовый системный пуш-триггер для проверки
+                new Notification("SRM Area 51 System", {
+                    body: "Quarterly reminder scheduled. Your 90-day dyadic calibration cycle is armed.",
+                    icon: "https://diagnostic.love/favicon.ico"
+                });
+            } else {
+                alert("Push notifications were denied. You can still use 'Add to Calendar' for reminders.");
+            }
+        }
+
+        // 3. Экспорт события в Google Calendar
+        function addToCalendarAction() {
+            const nextIso = localStorage.getItem(`${currentPairId}_next_session`);
+            const targetDate = nextIso ? new Date(nextIso) : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+            
+            const startStr = targetDate.toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 15) + "Z";
+            const endDate = new Date(targetDate.getTime() + 45 * 60 * 1000); // 45 минут сессия
+            const endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 15) + "Z";
+
+            const calTitle = encodeURIComponent("SRM Dyadic Recalibration Session (Area 51)");
+            const calDetails = encodeURIComponent("Quarterly dyadic calibration cycle. Complete the 15-minute diagnostic protocol on https://diagnostic.love/#pair=" + currentPairId);
+            
+            const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${startStr}/${endStr}&details=${calDetails}`;
+            window.open(gCalUrl, '_blank');
+        }
+
+        // 4. Внеплановый сброс при внешнем стрессе E_ext
+        function triggerAcuteStressEvent() {
+            const confirmed = confirm("Log an acute external stressor (E_ext) such as sudden relocation, career shock, or family crisis?\n\nThis will initiate an immediate emergency recalibration session.");
+            if (confirmed) {
+                // Сбрасываем пересказы для новой калибровки, сохраняя историю
+                localStorage.removeItem(`${currentPairId}_p1_text`);
+                localStorage.removeItem(`${currentPairId}_p2_text`);
+                goToStep('vectors');
+            }
+        }
+
+        
     </script>
 </body>
 </html>
