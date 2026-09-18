@@ -235,30 +235,6 @@
         let QUIZ_DATA = null;
         let selectedQuizQuestions = [];
 
-        // Встроенный аварийный резерв сценариев (срабатывает, если файл недоступен)
-        const FALLBACK_SCENARIO = {
-            id: "priority_conflict",
-            title: "Scenario 1: The Priority Conflict (Commitment vs Career)",
-            text: "A couple had been planning a four-day weekend getaway for three months to recharge after an exhausting quarter. The flights are booked, the apartment by the coast is paid for, and bags are packed. On Friday at noon, one partner receives an urgent call from a major client offering an unexpected, high-stakes project. It guarantees a substantial financial bonus and critical industry exposure, but requires working non-stop through the entire weekend. A definitive answer must be given within thirty minutes.",
-            keywords_p1_focus: ["career", "project", "opportunity", "money", "bonus", "growth", "future", "client", "stakes", "invest"],
-            keywords_p2_focus: ["trip", "weekend", "vacation", "agreement", "tickets", "packed", "unfair", "break", "commitment", "plans"],
-            repair_a: "For Partner A (Stabilizing Basis): compensate axis Y (Stability) through clear renegotiation and an upgraded shared experience.",
-            repair_b: "For Partner B (Damping γ < 1): introduce a response pause, de-escalating accusations to evaluate shared systemic benefit."
-        };
-
-        // Встроенный аварийный резерв вопросов дистрактора
-        const FALLBACK_QUIZ = {
-            group_1: [
-                { id: "g1_coffee", question: "How many cups of coffee or tea does your partner typically drink daily?", options: ["Rarely / None", "1–2 cups", "3 or more cups"] }
-            ],
-            group_2: [
-                { id: "g2_recharge", question: "When emotionally depleted, what is their primary recharge mode?", options: ["Total solitude and silence", "Venting and talking it through", "Physical shift (walk, exercise)", "Immediate uninterrupted sleep"] }
-            ],
-            group_3: [
-                { id: "g3_support", question: "What type of support does your partner appreciate most when overwhelmed?", options: ["Practical takeover of small tasks", "Quiet empathetic presence without advice", "Direct words of validation"] }
-            ]
-        };
-
         function hashCode(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
@@ -268,37 +244,33 @@
             return hash;
         }
 
-        async function loadScenariosAndSync() {
+        // Загрузка сценариев из scenarios_en.json
+        async function loadScenarios() {
             try {
-                const res = await fetch('scenarios_en.json');
-                if (res.ok) {
-                    SCENARIOS = await res.json();
-                } else {
-                    SCENARIOS = [FALLBACK_SCENARIO];
-                }
+                const res = await fetch('./scenarios_en.json?v=' + Date.now());
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                SCENARIOS = await res.json();
+                syncScenarioWithPair();
             } catch (e) {
-                console.warn("Using fallback scenario", e);
-                SCENARIOS = [FALLBACK_SCENARIO];
+                console.error("Critical error loading scenarios_en.json:", e);
+                document.getElementById('reading-box').innerText = "Error: Could not load scenarios_en.json from repository root.";
             }
-            syncScenarioWithPair();
         }
 
+        // Загрузка вопросов из quiz.json
         async function loadQuizData() {
             try {
-                const res = await fetch('quiz.json');
-                if (res.ok) {
-                    QUIZ_DATA = await res.json();
-                } else {
-                    QUIZ_DATA = FALLBACK_QUIZ;
-                }
+                const res = await fetch('./quiz.json?v=' + Date.now());
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                QUIZ_DATA = await res.json();
+                console.log("quiz.json loaded successfully:", QUIZ_DATA);
             } catch (e) {
-                console.warn("Using fallback quiz", e);
-                QUIZ_DATA = FALLBACK_QUIZ;
+                console.error("Critical error loading quiz.json:", e);
             }
         }
 
         function syncScenarioWithPair() {
-            if (!SCENARIOS || SCENARIOS.length === 0) SCENARIOS = [FALLBACK_SCENARIO];
+            if (!SCENARIOS || SCENARIOS.length === 0) return;
             const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
             activeScenario = SCENARIOS[scenarioIndex];
 
@@ -308,7 +280,7 @@
             if (boxEl) boxEl.innerText = activeScenario.text;
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1);
             if (hash.startsWith('pair=')) {
                 currentPairId = hash.replace('pair=', '');
@@ -319,8 +291,9 @@
                 if (joinEl) joinEl.classList.remove('hidden');
             }
 
-            await loadScenariosAndSync();
-            await loadQuizData();
+            // Запускаем загрузку внешних файлов без блокировки DOM
+            loadScenarios();
+            loadQuizData();
         });
 
         function initNewPair() {
@@ -438,17 +411,21 @@
             }, 1000);
         }
 
+        // Динамический рендеринг строго из quiz.json
         function renderDistractorStep() {
             const container = document.getElementById('distractor-questions-container');
             if (!container) return;
 
-            if (!QUIZ_DATA) QUIZ_DATA = FALLBACK_QUIZ;
+            if (!QUIZ_DATA || !QUIZ_DATA.group_1 || !QUIZ_DATA.group_2 || !QUIZ_DATA.group_3) {
+                container.innerHTML = `<p class="text-rose-400 text-center py-2">Error: Failed to load quiz.json. Check network tab.</p>`;
+                return;
+            }
 
             const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
             selectedQuizQuestions = [
-                pickRandom(QUIZ_DATA.group_1 || FALLBACK_QUIZ.group_1),
-                pickRandom(QUIZ_DATA.group_2 || FALLBACK_QUIZ.group_2),
-                pickRandom(QUIZ_DATA.group_3 || FALLBACK_QUIZ.group_3)
+                pickRandom(QUIZ_DATA.group_1),
+                pickRandom(QUIZ_DATA.group_2),
+                pickRandom(QUIZ_DATA.group_3)
             ];
 
             container.innerHTML = selectedQuizQuestions.map((q, idx) => `
@@ -625,7 +602,10 @@
 
             document.getElementById('cfi-display').innerText = metrics.cfi.toFixed(2) + (metrics.cfi >= 0.51 ? " (Cooperative)" : " (Egocentric)");
             document.getElementById('idr-display').innerText = metrics.idr.toFixed(2) + (metrics.idr > 0.30 ? " (Comma Divergence!)" : " (Aligned)");
-            document.getElementById('scenario-title-display').innerText = activeScenario.title;
+            
+            if (activeScenario) {
+                document.getElementById('scenario-title-display').innerText = activeScenario.title;
+            }
 
             if (metrics.idr > 0.30) {
                 v1.y = Math.max(0.1, v1.y - 0.12);
@@ -639,7 +619,7 @@
             document.getElementById('vol-val').innerText = vol.toFixed(4);
 
             const actionContainer = document.getElementById('action-steps-content');
-            if (actionContainer) {
+            if (actionContainer && activeScenario) {
                 actionContainer.innerHTML = `
                     <p>• <b>Partner 1:</b> ${activeScenario.repair_a}</p>
                     <p>• <b>Partner 2:</b> ${activeScenario.repair_b}</p>
