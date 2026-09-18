@@ -1,0 +1,32 @@
+[
+  {
+    "id": "priority_conflict",
+    "title": "Scenario 1: The Priority Conflict (Commitment vs Career)",
+    "focus_axes": "Y vs Z",
+    "text": "A couple had been planning a four-day weekend getaway for three months to recharge after an exhausting quarter. The flights are booked, the apartment by the coast is paid for, and bags are packed. On Friday at noon, one partner receives an urgent call from a major client offering an unexpected, high-stakes project. It guarantees a substantial financial bonus and critical industry exposure, but requires working non-stop through the entire weekend. A definitive answer must be given within thirty minutes.",
+    "keywords_p1_focus": ["career", "project", "opportunity", "money", "bonus", "growth", "future", "client", "stakes", "invest"],
+    "keywords_p2_focus": ["trip", "weekend", "vacation", "agreement", "tickets", "packed", "unfair", "break", "commitment", "plans"],
+    "repair_a": "For the Career-focused partner (Stabilizing Basis): do not force an ultimatum; restore axis Y (Stability) through tangible compensation ('Let us reschedule for next weekend, and I will use part of the bonus to upgrade our accommodation').",
+    "repair_b": "For the other partner (Damping response γ < 1): pause before reacting emotionally; avoid escalating into accusations of selfishness, and calmly discuss how the project can serve joint interests."
+  },
+  {
+    "id": "spatial_tradeoff",
+    "title": "Scenario 2: The Spatial Trade-Off (Autonomy vs Routine)",
+    "focus_axes": "X, Z vs Y",
+    "text": "After two years of living together and establishing a stable shared routine, one partner is offered a prestigious three-month fellowship in another city. The opportunity comes with a generous research stipend and long-term career prospects, but it means temporary separation and shifting all daily household management onto the other partner. The decision cannot be postponed: the contract must be signed or declined by Monday morning.",
+    "keywords_p1_focus": ["fellowship", "prospects", "stipend", "career", "growth", "future", "opportunity", "prestige"],
+    "keywords_p2_focus": ["routine", "separation", "alone", "chores", "household", "burden", "distance", "unfair"],
+    "repair_a": "For the fellowship partner: organize practical household offloading for the partner staying behind (hire cleaning services, arrange meal deliveries, schedule regular visits).",
+    "repair_b": "For the staying partner: anchor to the temporary nature of the fellowship and view this stage as a strategic investment into the shared long-term horizon."
+  },
+  {
+    "id": "resource_dilemma",
+    "title": "Scenario 3: The Resource Allocation Dilemma (Family vs Shared Goal)",
+    "focus_axes": "X vs Y",
+    "text": "A couple has spent the last year building a dedicated savings fund intended for a joint down payment on their first home. Unexpectedly, a close relative of one partner faces an urgent financial crisis that requires immediate assistance roughly equal to half of the accumulated savings. The money would act as an interest-free loan with no clear repayment timeline. Both partners realize that helping will push their housing goal back by at least a year.",
+    "keywords_p1_focus": ["relative", "family", "crisis", "help", "loan", "assistance", "emergency", "duty"],
+    "keywords_p2_focus": ["house", "down payment", "savings", "delay", "year", "unfair", "fund", "goal"],
+    "repair_a": "For the partner whose relative needs help: set clear terms and realistic repayment expectations without demanding unconditional sacrifice.",
+    "repair_b": "For the other partner: validate the value of family solidarity, while strictly locking in a non-negotiable financial safety reserve."
+  }
+]
