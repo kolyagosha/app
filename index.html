@@ -416,22 +416,34 @@
             const container = document.getElementById('distractor-questions-container');
             if (!container) return;
 
-            if (!QUIZ_DATA || !QUIZ_DATA.group_1 || !QUIZ_DATA.group_2 || !QUIZ_DATA.group_3) {
-                container.innerHTML = `<p class="text-rose-400 text-center py-2">Error: Failed to load quiz.json. Check network tab.</p>`;
+            // Если JSON еще не успел загрузиться с сети
+            if (!QUIZ_DATA || !Array.isArray(QUIZ_DATA) || QUIZ_DATA.length === 0) {
+                container.innerHTML = `<p class="text-rose-400 text-center py-2">Error: Questions data is not loaded yet.</p>`;
                 return;
             }
 
-            const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            selectedQuizQuestions = [
-                pickRandom(QUIZ_DATA.group_1),
-                pickRandom(QUIZ_DATA.group_2),
-                pickRandom(QUIZ_DATA.group_3)
-            ];
+            // ЯВНАЯ ФИЛЬТРАЦИЯ ПО ГРУППАМ 1, 2, 3
+            const group1 = QUIZ_DATA.filter(item => item.group === 1);
+            const group2 = QUIZ_DATA.filter(item => item.group === 2);
+            const group3 = QUIZ_DATA.filter(item => item.group === 3);
 
+            const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+            // Берем ровно по 1 случайному вопросу из каждой группы
+            selectedQuizQuestions = [
+                getRandomItem(group1),
+                getRandomItem(group2),
+                getRandomItem(group3)
+            ].filter(Boolean); // защита от пустых значений
+
+            // Отрисовываем 3 вопроса на экран
             container.innerHTML = selectedQuizQuestions.map((q, idx) => `
                 <div class="space-y-1.5 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}">
-                    <label class="text-slate-300 font-medium">${idx + 1}. ${q.question}</label>
-                    <select id="distract-q-${idx}" onchange="validateDynamicDistractor()" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <div class="flex justify-between items-center text-[11px]">
+                        <label class="text-slate-300 font-medium">${idx + 1}. ${q.question}</label>
+                        <span class="text-indigo-400 font-mono text-[9px] uppercase px-1.5 py-0.5 bg-indigo-950/60 rounded border border-indigo-900/40">Group ${q.group}</span>
+                    </div>
+                    <select id="distract-q-${idx}" onchange="validateDynamicDistractor()" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 text-xs">
                         <option value="">Select an option...</option>
                         ${q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                     </select>
@@ -440,7 +452,7 @@
 
             document.getElementById('distractor-next-btn').disabled = true;
         }
-
+        
         function validateDynamicDistractor() {
             const allAnswered = selectedQuizQuestions.every((_, idx) => {
                 const el = document.getElementById(`distract-q-${idx}`);
