@@ -18,7 +18,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
-        <!-- Header & Language Slot -->
+        <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <span class="text-indigo-400 text-xs font-mono font-bold tracking-wider uppercase">SRM • Area 51</span>
             <span class="text-[10px] font-mono text-slate-500 uppercase px-2 py-0.5 rounded border border-slate-800">EN</span>
@@ -31,7 +31,7 @@
                 <p class="text-slate-400 text-xs leading-relaxed">
                     Evidence-based dyadic diagnostic engine based on Natural Semantic Metalanguage (NSM) and 3D vector geometry.
                 </p>
-                <button onclick="initNewPair()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
+                <button type="button" onclick="initNewPair()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
                     Generate Calibration Key
                 </button>
             </div>
@@ -39,10 +39,10 @@
             <div id="invite-block" class="hidden space-y-3">
                 <p class="text-xs text-slate-300">Share this secure link with your partner:</p>
                 <div id="share-link-display" class="p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-[11px] font-mono text-indigo-300 break-all"></div>
-                <button id="copy-btn" onclick="copyShareLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-medium transition">
+                <button type="button" id="copy-btn" onclick="copyShareLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-medium transition">
                     📋 Copy Partner Link
                 </button>
-                <button onclick="goToStep('protocol')" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-medium transition">
+                <button type="button" onclick="goToStep('protocol')" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-medium transition">
                     Proceed to Zero Protocol →
                 </button>
             </div>
@@ -50,7 +50,7 @@
             <div id="join-block" class="hidden space-y-3">
                 <h2 class="text-lg font-bold text-white">Joined Calibration Session</h2>
                 <p class="text-slate-400 text-xs">You have joined your partner's calibration space.</p>
-                <button onclick="goToStep('protocol')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
+                <button type="button" onclick="goToStep('protocol')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
                     Review Zero Protocol →
                 </button>
             </div>
@@ -70,7 +70,7 @@
                 <input type="checkbox" id="check-24h" onchange="toggleProtocolBtn()" class="rounded border-slate-700 text-indigo-600">
                 <span>I commit to the 24-hour protocol</span>
             </label>
-            <button id="protocol-btn" disabled onclick="goToStep('vectors')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition text-white text-sm">
+            <button type="button" id="protocol-btn" disabled onclick="goToStep('vectors')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition text-white text-sm">
                 Confirm & Proceed
             </button>
         </div>
@@ -123,7 +123,7 @@
                 </div>
             </div>
 
-            <button id="cross-next-btn" onclick="handleCrossCheckSubmit()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
+            <button type="button" id="cross-next-btn" onclick="handleCrossCheckSubmit()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-medium transition text-white text-sm">
                 Confirm Self-Assessment → Evaluate Partner
             </button>
         </div>
@@ -140,7 +140,7 @@
             <p class="text-slate-500 text-xs text-center">Read carefully. The text will dissolve when the timer expires.</p>
         </div>
 
-       <!-- STEP 3: Cognitive Buffer & Dynamic Partner Attunement -->
+        <!-- STEP 3: Cognitive Buffer & Dynamic Partner Attunement -->
         <div id="step-distractor" class="hidden space-y-4">
             <div>
                 <span class="text-indigo-400 text-xs font-mono uppercase">Cognitive Buffer • Focus Shift</span>
@@ -150,12 +150,11 @@
                 </p>
             </div>
 
-            <!-- Сюда JS динамически вставит 3 вопроса по одному из каждой группы -->
             <div id="distractor-questions-container" class="space-y-3 bg-slate-950/70 p-4 border border-slate-800 rounded-xl text-xs">
                 <div class="text-slate-500 italic text-center py-2">Loading attunement questions...</div>
             </div>
 
-            <button id="distractor-next-btn" disabled onclick="submitDistractor()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition text-white text-sm">
+            <button type="button" id="distractor-next-btn" disabled onclick="submitDistractor()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-medium transition text-white text-sm">
                 Complete Buffer → Proceed to Recall
             </button>
         </div>
@@ -170,7 +169,7 @@
             <textarea id="recall-input" oninput="checkWordCount()" rows="4" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-sm focus:outline-none focus:border-indigo-500" placeholder="Type your retelling here..."></textarea>
             <div class="flex justify-between items-center text-xs">
                 <span id="word-counter" class="text-slate-500 font-mono">Words: 0 (range: 25–50)</span>
-                <button id="submit-recall-btn" disabled onclick="submitRecallAction()" class="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition text-white text-xs">
+                <button type="button" id="submit-recall-btn" disabled onclick="submitRecallAction()" class="py-2 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition text-white text-xs">
                     Submit Response
                 </button>
             </div>
@@ -181,7 +180,7 @@
             <div class="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
             <h2 class="text-base font-bold text-white">Awaiting Partner Response</h2>
             <p class="text-slate-400 text-xs">Syncing calibration records. The diagnostic snapshot will unlock once both responses are logged.</p>
-            <button onclick="simulatePartnerAction()" class="text-xs text-indigo-400 underline font-mono">
+            <button type="button" onclick="simulatePartnerAction()" class="text-xs text-indigo-400 underline font-mono mt-3">
                 [Dev: Simulate Partner Response]
             </button>
         </div>
@@ -226,8 +225,6 @@
         </div>
     </div>
 
-
-
     <script>
         let currentPairId = 'a51-demo';
         let myRole = 'p1';
@@ -235,16 +232,31 @@
         let crossStep = 1;
         let SCENARIOS = [];
         let activeScenario = null;
+        let QUIZ_DATA = null;
+        let selectedQuizQuestions = [];
 
-        // Fallback scenario in pure English
+        // Встроенный аварийный резерв сценариев (срабатывает, если файл недоступен)
         const FALLBACK_SCENARIO = {
             id: "priority_conflict",
             title: "Scenario 1: The Priority Conflict (Commitment vs Career)",
             text: "A couple had been planning a four-day weekend getaway for three months to recharge after an exhausting quarter. The flights are booked, the apartment by the coast is paid for, and bags are packed. On Friday at noon, one partner receives an urgent call from a major client offering an unexpected, high-stakes project. It guarantees a substantial financial bonus and critical industry exposure, but requires working non-stop through the entire weekend. A definitive answer must be given within thirty minutes.",
-            keywords_p1_focus: ["career", "project", "opportunity", "money", "bonus", "growth", "future", "client"],
-            keywords_p2_focus: ["trip", "weekend", "vacation", "agreement", "tickets", "packed", "unfair", "break", "commitment"],
-            repair_a: "For Partner A (Stabilizing Basis): compensate axis Y (Stability) through clear renegotiation and upgraded shared experience.",
-            repair_b: "For Partner B (Damping γ < 1): introduce a response pause, de-escalating accusations to evaluate shared benefit."
+            keywords_p1_focus: ["career", "project", "opportunity", "money", "bonus", "growth", "future", "client", "stakes", "invest"],
+            keywords_p2_focus: ["trip", "weekend", "vacation", "agreement", "tickets", "packed", "unfair", "break", "commitment", "plans"],
+            repair_a: "For Partner A (Stabilizing Basis): compensate axis Y (Stability) through clear renegotiation and an upgraded shared experience.",
+            repair_b: "For Partner B (Damping γ < 1): introduce a response pause, de-escalating accusations to evaluate shared systemic benefit."
+        };
+
+        // Встроенный аварийный резерв вопросов дистрактора
+        const FALLBACK_QUIZ = {
+            group_1: [
+                { id: "g1_coffee", question: "How many cups of coffee or tea does your partner typically drink daily?", options: ["Rarely / None", "1–2 cups", "3 or more cups"] }
+            ],
+            group_2: [
+                { id: "g2_recharge", question: "When emotionally depleted, what is their primary recharge mode?", options: ["Total solitude and silence", "Venting and talking it through", "Physical shift (walk, exercise)", "Immediate uninterrupted sleep"] }
+            ],
+            group_3: [
+                { id: "g3_support", question: "What type of support does your partner appreciate most when overwhelmed?", options: ["Practical takeover of small tasks", "Quiet empathetic presence without advice", "Direct words of validation"] }
+            ]
         };
 
         function hashCode(str) {
@@ -265,9 +277,24 @@
                     SCENARIOS = [FALLBACK_SCENARIO];
                 }
             } catch (e) {
+                console.warn("Using fallback scenario", e);
                 SCENARIOS = [FALLBACK_SCENARIO];
             }
             syncScenarioWithPair();
+        }
+
+        async function loadQuizData() {
+            try {
+                const res = await fetch('quiz.json');
+                if (res.ok) {
+                    QUIZ_DATA = await res.json();
+                } else {
+                    QUIZ_DATA = FALLBACK_QUIZ;
+                }
+            } catch (e) {
+                console.warn("Using fallback quiz", e);
+                QUIZ_DATA = FALLBACK_QUIZ;
+            }
         }
 
         function syncScenarioWithPair() {
@@ -291,6 +318,7 @@
                 if (createEl) createEl.classList.add('hidden');
                 if (joinEl) joinEl.classList.remove('hidden');
             }
+
             await loadScenariosAndSync();
             await loadQuizData();
         });
@@ -298,9 +326,16 @@
         function initNewPair() {
             currentPairId = 'a51-' + Math.random().toString(36).substring(2, 8);
             const shareUrl = window.location.origin + window.location.pathname + '#pair=' + currentPairId;
-            document.getElementById('share-link-display').innerText = shareUrl;
-            document.getElementById('create-room-block').classList.add('hidden');
-            document.getElementById('invite-block').classList.remove('hidden');
+            
+            const shareBox = document.getElementById('share-link-display');
+            if (shareBox) shareBox.innerText = shareUrl;
+
+            const createBlock = document.getElementById('create-room-block');
+            const inviteBlock = document.getElementById('invite-block');
+
+            if (createBlock) createBlock.classList.add('hidden');
+            if (inviteBlock) inviteBlock.classList.remove('hidden');
+
             syncScenarioWithPair();
         }
 
@@ -322,13 +357,13 @@
             allSteps.forEach(s => {
                 const el = document.getElementById('step-' + s);
                 if (el) el.classList.add('hidden');
-                if (step === 'distractor') renderDistractorStep();
             });
 
             const target = document.getElementById('step-' + step);
             if (target) target.classList.remove('hidden');
 
             if (step === 'reading') startReadingTimer();
+            if (step === 'distractor') renderDistractorStep();
             if (step === 'result') {
                 requestAnimationFrame(() => {
                     setTimeout(initThreeScene, 100);
@@ -398,11 +433,52 @@
                 if (timerEl) timerEl.innerText = left + 's';
                 if (left <= 0) {
                     clearInterval(interval);
-                    const box = document.getElementById('reading-box');
-                    if (box) box.remove();
                     goToStep('distractor');
                 }
             }, 1000);
+        }
+
+        function renderDistractorStep() {
+            const container = document.getElementById('distractor-questions-container');
+            if (!container) return;
+
+            if (!QUIZ_DATA) QUIZ_DATA = FALLBACK_QUIZ;
+
+            const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            selectedQuizQuestions = [
+                pickRandom(QUIZ_DATA.group_1 || FALLBACK_QUIZ.group_1),
+                pickRandom(QUIZ_DATA.group_2 || FALLBACK_QUIZ.group_2),
+                pickRandom(QUIZ_DATA.group_3 || FALLBACK_QUIZ.group_3)
+            ];
+
+            container.innerHTML = selectedQuizQuestions.map((q, idx) => `
+                <div class="space-y-1.5 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}">
+                    <label class="text-slate-300 font-medium">${idx + 1}. ${q.question}</label>
+                    <select id="distract-q-${idx}" onchange="validateDynamicDistractor()" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="">Select an option...</option>
+                        ${q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                </div>
+            `).join('');
+
+            document.getElementById('distractor-next-btn').disabled = true;
+        }
+
+        function validateDynamicDistractor() {
+            const allAnswered = selectedQuizQuestions.every((_, idx) => {
+                const el = document.getElementById(`distract-q-${idx}`);
+                return el && el.value !== "";
+            });
+            document.getElementById('distractor-next-btn').disabled = !allAnswered;
+        }
+
+        function submitDistractor() {
+            const answers = selectedQuizQuestions.map((q, idx) => ({
+                question_id: q.id,
+                answer: document.getElementById(`distract-q-${idx}`).value
+            }));
+            localStorage.setItem(`${currentPairId}_${myRole}_distractor_answers`, JSON.stringify(answers));
+            goToStep('recall');
         }
 
         function checkWordCount() {
@@ -624,74 +700,6 @@
             }
             animate();
         }
-
-        let QUIZ_DATA = null;
-        let selectedQuizQuestions = [];
-
-        // Загрузка вопросов
-        async function loadQuizData() {
-            try {
-                const res = await fetch('quiz.json');
-                if (res.ok) {
-                    QUIZ_DATA = await res.json();
-                }
-            } catch (e) {
-                console.warn("Quiz load fallback activated", e);
-            }
-        }
-
-        // Вызывается при переходе на шаг distractor
-        function renderDistractorStep() {
-            const container = document.getElementById('distractor-questions-container');
-            if (!container) return;
-
-            // Если JSON не загрузился или пустой — резервный дефолт
-            if (!QUIZ_DATA) {
-                container.innerHTML = `<p class="text-slate-400 text-center py-2">Buffer initialized. Click continue when ready.</p>`;
-                document.getElementById('distractor-next-btn').disabled = false;
-                return;
-            }
-
-            // Берем строго по 1 случайному вопросу из каждой группы
-            const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            selectedQuizQuestions = [
-                pickRandom(QUIZ_DATA.group_1),
-                pickRandom(QUIZ_DATA.group_2),
-                pickRandom(QUIZ_DATA.group_3)
-            ];
-
-            container.innerHTML = selectedQuizQuestions.map((q, idx) => `
-                <div class="space-y-1.5 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}">
-                    <label class="text-slate-300 font-medium">${idx + 1}. ${q.question}</label>
-                    <select id="distract-q-${idx}" onchange="validateDynamicDistractor()" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500">
-                        <option value="">Select an option...</option>
-                        ${q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                    </select>
-                </div>
-            `).join('');
-
-            document.getElementById('distractor-next-btn').disabled = true;
-        }
-
-        function validateDynamicDistractor() {
-            const allAnswered = selectedQuizQuestions.every((_, idx) => {
-                const el = document.getElementById(`distract-q-${idx}`);
-                return el && el.value !== "";
-            });
-            document.getElementById('distractor-next-btn').disabled = !allAnswered;
-        }
-
-        function submitDistractor() {
-            const answers = selectedQuizQuestions.map((q, idx) => ({
-                question_id: q.id,
-                answer: document.getElementById(`distract-q-${idx}`).value
-            }));
-            localStorage.setItem(`${currentPairId}_${myRole}_distractor_answers`, JSON.stringify(answers));
-            goToStep('recall');
-        }
-        
     </script>
-
-
-    </body>
+</body>
 </html>
