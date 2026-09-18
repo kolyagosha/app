@@ -1,53 +1,56 @@
-{
-  "group_1": [
-    {
-      "id": "g1_coffee",
-      "question": "How many cups of coffee or tea does your partner typically drink daily?",
-      "options": ["Rarely / None", "1–2 cups", "3 or more cups"]
-    },
-    {
-      "id": "g1_morning",
-      "question": "What is your partner's natural morning rhythm?",
-      "options": ["Slow starter needing quiet time", "Up and active immediately", "Dependent on urgent alarm deadlines"]
-    },
-    {
-      "id": "g1_workspace",
-      "question": "How does your partner prefer their working environment?",
-      "options": ["Strictly organized and minimal", "Creative organized chaos", "Constantly switching spots/rooms"]
-    }
-  ],
-  "group_2": [
-    {
-      "id": "g2_recharge",
-      "question": "When emotionally depleted, what is their primary recharge mode?",
-      "options": ["Total solitude and silence", "Venting and talking it through", "Physical shift (walk, exercise, drive)", "Immediate uninterrupted sleep"]
-    },
-    {
-      "id": "g2_stress_action",
-      "question": "Under acute deadline stress, does your partner tend to:",
-      "options": ["Withdraw into internal focus", "Hyper-mobilize and multitask rapidly", "Seek constant external reassurance"]
-    },
-    {
-      "id": "g2_frustration",
-      "question": "When plans collapse abruptly, their first instinctive reaction is:",
-      "options": ["Immediate tactical problem solving", "Brief irritation followed by acceptance", "Freezing and needing time to reset"]
-    }
-  ],
-  "group_3": [
-    {
-      "id": "g3_support",
-      "question": "What type of support does your partner appreciate most when overwhelmed?",
-      "options": ["Practical takeover of small tasks", "Quiet empathetic presence without advice", "Direct words of validation and encouragement"]
-    },
-    {
-      "id": "g3_microjoy",
-      "question": "What small gesture reliably lifts their mood after a grueling week?",
-      "options": ["A favorite treat or cooked meal", "An unplanned quiet evening together", "Uninterrupted free time for a personal hobby"]
-    },
-    {
-      "id": "g3_decision",
-      "question": "When making shared minor decisions (food, routes), they usually prefer:",
-      "options": ["Having options narrowed down to two", "Taking full charge of the choice", "Letting the other partner decide completely"]
-    }
-  ]
-}
+[
+  {
+    "id": "g1_coffee",
+    "group": 1,
+    "question": "How many cups of coffee or tea does your partner typically drink daily?",
+    "options": ["Rarely / None", "1–2 cups", "3 or more cups"]
+  },
+  {
+    "id": "g1_morning",
+    "group": 1,
+    "question": "What is your partner's natural morning rhythm?",
+    "options": ["Slow starter needing quiet time", "Up and active immediately", "Dependent on urgent alarm deadlines"]
+  },
+  {
+    "id": "g1_workspace",
+    "group": 1,
+    "question": "How does your partner prefer their working environment?",
+    "options": ["Strictly organized and minimal", "Creative organized chaos", "Constantly switching spots/rooms"]
+  },
+  {
+    "id": "g2_recharge",
+    "group": 2,
+    "question": "When emotionally depleted, what is their primary recharge mode?",
+    "options": ["Total solitude and silence", "Venting and talking it through", "Physical shift (walk, exercise)", "Immediate uninterrupted sleep"]
+  },
+  {
+    "id": "g2_stress",
+    "group": 2,
+    "question": "Under acute deadline stress, does your partner tend to:",
+    "options": ["Withdraw into internal focus", "Hyper-mobilize and multitask rapidly", "Seek constant external reassurance"]
+  },
+  {
+    "id": "g2_frustration",
+    "group": 2,
+    "question": "When plans collapse abruptly, their first instinctive reaction is:",
+    "options": ["Immediate tactical problem solving", "Brief irritation followed by acceptance", "Freezing and needing time to reset"]
+  },
+  {
+    "id": "g3_support",
+    "group": 3,
+    "question": "What type of support does your partner appreciate most when overwhelmed?",
+    "options": ["Practical takeover of small tasks", "Quiet empathetic presence without advice", "Direct words of validation"]
+  },
+  {
+    "id": "g3_microjoy",
+    "group": 3,
+    "question": "What small gesture reliably lifts their mood after a grueling week?",
+    "options": ["A favorite treat or cooked meal", "An unplanned quiet evening together", "Uninterrupted free time for a personal hobby"]
+  },
+  {
+    "id": "g3_decision",
+    "group": 3,
+    "question": "When making shared minor decisions (food, routes), they usually prefer:",
+    "options": ["Having options narrowed down to two", "Taking full charge of the choice", "Letting the other partner decide completely"]
+  }
+]
