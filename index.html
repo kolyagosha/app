@@ -15,31 +15,19 @@
         }
     </style>
 </head>
-
-
-    <!-- Global Persistent Header -->
-    <header>
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-indigo-400 text-xs font-mono font-bold tracking-wider uppercase">SRM • Area 51</span>
-            
-            <div class="flex items-center gap-2">
-                <!-- Экстренная кнопка доступна всегда и отовсюду -->
-                <button type="button" onclick="triggerAcuteStressEvent()" title="Emergency Recalibration" class="text-[11px] font-mono font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 px-2.5 py-1 rounded-lg transition flex items-center gap-1 shadow-sm">
-                    <span>⚡</span> <span>Crisis (E_ext)</span>
-                </button>
-            </div>
-        </div>
-    </header>
-    
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-indigo-400 text-xs font-mono font-bold tracking-wider uppercase">SRM • Area 51</span>
-            <span class="text-[10px] font-mono text-slate-500 uppercase px-2 py-0.5 rounded border border-slate-800">EN</span>
-        </div>
+    <!-- 1. Global Persistent Header (над карточкой) -->
+    <header class="w-full max-w-md flex justify-between items-center mb-4">
+        <span class="text-indigo-400 text-xs font-mono font-bold tracking-wider uppercase">SRM • Area 51</span>
+        <button type="button" onclick="triggerAcuteStressEvent()" title="Emergency Recalibration" class="text-[11px] font-mono font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 px-2.5 py-1 rounded-lg transition flex items-center gap-1 shadow-sm">
+            <span>⚡</span> <span>Crisis (E_ext)</span>
+        </button>
+    </header>
 
+    <!-- 2. Main Card Container (сама карточка теста) -->
+    <main class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+        
         <!-- STEP 1: Room Pairing -->
         <div id="step-pair" class="space-y-4">
             <div id="create-room-block" class="space-y-3">
@@ -229,7 +217,7 @@
                 </div>
             </div>
 
-           <!-- Sawtooth Maintenance Protocol & 90-Day Reminder -->
+            <!-- Sawtooth Maintenance Protocol & 90-Day Reminder -->
             <div class="p-3.5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-3 text-xs">
                 <div class="flex justify-between items-center">
                     <span class="text-indigo-400 font-mono font-semibold tracking-wide flex items-center gap-1.5">
@@ -242,7 +230,7 @@
                     Dyadic alignment naturally degrades under routine entropy. Scheduled maintenance window: <b id="exact-date-text" class="text-slate-200">...</b>
                 </p>
 
-                <!-- Actions: Push, Calendar, Emergency Stress -->
+                <!-- Actions: Push, Calendar -->
                 <div class="grid grid-cols-2 gap-2 pt-1">
                     <button type="button" id="push-btn" onclick="requestPushNotificationPermission()" class="py-2 px-2 bg-indigo-950/40 hover:bg-indigo-900/60 border border-indigo-800/60 text-indigo-300 rounded-lg font-medium text-[11px] transition text-center flex items-center justify-center gap-1">
                         🔔 Enable Push Reminder
@@ -251,14 +239,28 @@
                         📅 Add to Calendar
                     </button>
                 </div>
-
-                
             </div>
 
             <p class="text-center text-slate-500 text-[11px]">Area 51 Dyadic Engine • Calibration cycle: once every 3 months.</p>
-                  
-    </div>
+        </div>
 
+    </main>
+
+    <!-- 3. Laboratory Footer Signature (под карточкой) -->
+    <footer class="w-full max-w-md mt-6 text-center">
+        <p class="text-[11px] font-mono text-slate-500 tracking-wider">
+            <a href="https://hai-guys.space" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition underline underline-offset-4 decoration-slate-800 hover:decoration-indigo-500">
+                hai-guys.space
+            </a> 
+            <span class="text-slate-600">presents</span> 
+            <span class="text-slate-400 font-semibold">diagnostic.love</span>
+        </p>
+        <p class="text-[9px] font-mono text-slate-600 mt-1">
+            Scientific Relationship Model (SRM) • Non-commercial Academic Research
+        </p>
+    </footer>
+
+    <!-- 4. Logic Scripts -->
     <script>
         let currentPairId = 'a51-demo';
         let myRole = 'p1';
@@ -278,7 +280,6 @@
             return hash;
         }
 
-        // Загрузка сценариев из scenarios_en.json
         async function loadScenarios() {
             try {
                 const res = await fetch('./scenarios_en.json?v=' + Date.now());
@@ -287,11 +288,11 @@
                 syncScenarioWithPair();
             } catch (e) {
                 console.error("Critical error loading scenarios_en.json:", e);
-                document.getElementById('reading-box').innerText = "Error: Could not load scenarios_en.json from repository root.";
+                const rBox = document.getElementById('reading-box');
+                if (rBox) rBox.innerText = "Error: Could not load scenarios_en.json from repository root.";
             }
         }
 
-        // Загрузка вопросов из quiz.json
         async function loadQuizData() {
             try {
                 const res = await fetch('./quiz.json?v=' + Date.now());
@@ -325,7 +326,6 @@
                 if (joinEl) joinEl.classList.remove('hidden');
             }
 
-            // Запускаем загрузку внешних файлов без блокировки DOM
             loadScenarios();
             loadQuizData();
         });
@@ -445,32 +445,27 @@
             }, 1000);
         }
 
-        // Динамический рендеринг строго из quiz.json
         function renderDistractorStep() {
             const container = document.getElementById('distractor-questions-container');
             if (!container) return;
 
-            // Если JSON еще не успел загрузиться с сети
             if (!QUIZ_DATA || !Array.isArray(QUIZ_DATA) || QUIZ_DATA.length === 0) {
                 container.innerHTML = `<p class="text-rose-400 text-center py-2">Error: Questions data is not loaded yet.</p>`;
                 return;
             }
 
-            // ЯВНАЯ ФИЛЬТРАЦИЯ ПО ГРУППАМ 1, 2, 3
             const group1 = QUIZ_DATA.filter(item => item.group === 1);
             const group2 = QUIZ_DATA.filter(item => item.group === 2);
             const group3 = QUIZ_DATA.filter(item => item.group === 3);
 
             const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-            // Берем ровно по 1 случайному вопросу из каждой группы
             selectedQuizQuestions = [
                 getRandomItem(group1),
                 getRandomItem(group2),
                 getRandomItem(group3)
-            ].filter(Boolean); // защита от пустых значений
+            ].filter(Boolean);
 
-            // Отрисовываем 3 вопроса на экран
             container.innerHTML = selectedQuizQuestions.map((q, idx) => `
                 <div class="space-y-1.5 ${idx > 0 ? 'pt-2 border-t border-slate-800/60' : ''}">
                     <div class="flex justify-between items-center text-[11px]">
@@ -486,7 +481,7 @@
 
             document.getElementById('distractor-next-btn').disabled = true;
         }
-        
+
         function validateDynamicDistractor() {
             const allAnswered = selectedQuizQuestions.every((_, idx) => {
                 const el = document.getElementById(`distract-q-${idx}`);
@@ -664,14 +659,6 @@
 
             document.getElementById('vol-val').innerText = vol.toFixed(4);
 
-            const actionContainer = document.getElementById('action-steps-content');
-            if (actionContainer && activeScenario) {
-                actionContainer.innerHTML = `
-                    <p>• <b>Partner 1:</b> ${activeScenario.repair_a}</p>
-                    <p>• <b>Partner 2:</b> ${activeScenario.repair_b}</p>
-                `;
-            }
-
             const verts = [
                 0, 0, 0,
                 v1.x, v1.y, v1.z,
@@ -728,7 +715,6 @@
             animate();
         }
 
-        // 1. Расчет плановой даты через 90 дней
         function calculateNextMaintenance() {
             const now = new Date();
             const nextCycle = new Date(now.getTime() + (90 * 24 * 60 * 60 * 1000));
@@ -742,11 +728,9 @@
             const dateEl = document.getElementById('exact-date-text');
             if (dateEl) dateEl.innerText = formattedDate;
 
-            // Проверяем текущий статус разрешения пушей
             checkNotificationStatus();
         }
 
-        // 2. Системный запрос на Push-уведомления
         function checkNotificationStatus() {
             const btn = document.getElementById('push-btn');
             if (!btn || !("Notification" in window)) return;
@@ -772,7 +756,6 @@
                 btn.disabled = true;
                 btn.classList.replace("text-indigo-300", "text-emerald-400");
 
-                // Тестовый системный пуш-триггер для проверки
                 new Notification("SRM Area 51 System", {
                     body: "Quarterly reminder scheduled. Your 90-day dyadic calibration cycle is armed.",
                     icon: "https://diagnostic.love/favicon.ico"
@@ -782,13 +765,12 @@
             }
         }
 
-        // 3. Экспорт события в Google Calendar
         function addToCalendarAction() {
             const nextIso = localStorage.getItem(`${currentPairId}_next_session`);
             const targetDate = nextIso ? new Date(nextIso) : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
             
             const startStr = targetDate.toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 15) + "Z";
-            const endDate = new Date(targetDate.getTime() + 45 * 60 * 1000); // 45 минут сессия
+            const endDate = new Date(targetDate.getTime() + 45 * 60 * 1000);
             const endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 15) + "Z";
 
             const calTitle = encodeURIComponent("SRM Dyadic Recalibration Session (Area 51)");
@@ -798,15 +780,12 @@
             window.open(gCalUrl, '_blank');
         }
 
-        // 4. Внеплановый сброс при внешнем стрессе E_ext
-       function triggerAcuteStressEvent() {
+        function triggerAcuteStressEvent() {
             const confirmed = confirm("Activate Crisis Protocol (E_ext)?\n\nThis will bypass standard routines and immediately launch an unscheduled dyadic calibration session.");
             if (confirmed) {
-                // Сбрасываем старые пересказы текущей сессии
                 localStorage.removeItem(`${currentPairId}_p1_text`);
                 localStorage.removeItem(`${currentPairId}_p2_text`);
                 
-                // Переходим напрямую к калибровке векторов
                 crossStep = 1;
                 document.getElementById('cross-title').innerText = "1. Emergency Self-Assessment (E_ext)";
                 document.getElementById('cross-desc').innerText = "Assess your current operational capacity taking into account the acute external stressor.";
@@ -815,22 +794,6 @@
                 goToStep('vectors');
             }
         }
-        
     </script>
-
-    <!-- ВОТ ЗДЕСЬ ДОЛЖЕН БЫТЬ ФУТЕР (снаружи карточки, на общем темном фоне сайта) -->
-    <footer class="w-full max-w-md mt-6 text-center">
-        <p class="text-[11px] font-mono text-slate-500 tracking-wider">
-            <a href="https://hai-guys.space" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition underline underline-offset-4 decoration-slate-800 hover:decoration-indigo-500">
-                hai-guys.space
-            </a> 
-            <span class="text-slate-600">presents</span> 
-            <span class="text-slate-400 font-semibold">diagnostic.love</span>
-        </p>
-        <p class="text-[9px] font-mono text-slate-600 mt-1">
-            Scientific Relationship Model (SRM) • Non-commercial Academic Research
-        </p>
-    </footer>
-        
- </body>   
+</body>   
 </html>
