@@ -214,3 +214,403 @@
             <p class="text-center text-slate-500 text-[11px]">Scheduled calibration cycle: once every 3 months.</p>
         </div>
     </div>
+
+
+
+    <script>
+        let currentPairId = 'a51-demo';
+        let myRole = 'p1';
+        let animId = null;
+        let crossStep = 1;
+        let SCENARIOS = [];
+        let activeScenario = null;
+
+        // Fallback scenario in pure English
+        const FALLBACK_SCENARIO = {
+            id: "priority_conflict",
+            title: "Scenario 1: The Priority Conflict (Commitment vs Career)",
+            text: "A couple had been planning a four-day weekend getaway for three months to recharge after an exhausting quarter. The flights are booked, the apartment by the coast is paid for, and bags are packed. On Friday at noon, one partner receives an urgent call from a major client offering an unexpected, high-stakes project. It guarantees a substantial financial bonus and critical industry exposure, but requires working non-stop through the entire weekend. A definitive answer must be given within thirty minutes.",
+            keywords_p1_focus: ["career", "project", "opportunity", "money", "bonus", "growth", "future", "client"],
+            keywords_p2_focus: ["trip", "weekend", "vacation", "agreement", "tickets", "packed", "unfair", "break", "commitment"],
+            repair_a: "For Partner A (Stabilizing Basis): compensate axis Y (Stability) through clear renegotiation and upgraded shared experience.",
+            repair_b: "For Partner B (Damping γ < 1): introduce a response pause, de-escalating accusations to evaluate shared benefit."
+        };
+
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash;
+        }
+
+        async function loadScenariosAndSync() {
+            try {
+                const res = await fetch('scenarios_en.json');
+                if (res.ok) {
+                    SCENARIOS = await res.json();
+                } else {
+                    SCENARIOS = [FALLBACK_SCENARIO];
+                }
+            } catch (e) {
+                SCENARIOS = [FALLBACK_SCENARIO];
+            }
+            syncScenarioWithPair();
+        }
+
+        function syncScenarioWithPair() {
+            if (!SCENARIOS || SCENARIOS.length === 0) SCENARIOS = [FALLBACK_SCENARIO];
+            const scenarioIndex = Math.abs(hashCode(currentPairId)) % SCENARIOS.length;
+            activeScenario = SCENARIOS[scenarioIndex];
+
+            const titleEl = document.getElementById('reading-scenario-title');
+            const boxEl = document.getElementById('reading-box');
+            if (titleEl) titleEl.innerText = activeScenario.title;
+            if (boxEl) boxEl.innerText = activeScenario.text;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const hash = window.location.hash.substring(1);
+            if (hash.startsWith('pair=')) {
+                currentPairId = hash.replace('pair=', '');
+                myRole = 'p2';
+                const createEl = document.getElementById('create-room-block');
+                const joinEl = document.getElementById('join-block');
+                if (createEl) createEl.classList.add('hidden');
+                if (joinEl) joinEl.classList.remove('hidden');
+            }
+            await loadScenariosAndSync();
+        });
+
+        function initNewPair() {
+            currentPairId = 'a51-' + Math.random().toString(36).substring(2, 8);
+            const shareUrl = window.location.origin + window.location.pathname + '#pair=' + currentPairId;
+            document.getElementById('share-link-display').innerText = shareUrl;
+            document.getElementById('create-room-block').classList.add('hidden');
+            document.getElementById('invite-block').classList.remove('hidden');
+            syncScenarioWithPair();
+        }
+
+        function copyShareLink() {
+            const linkText = document.getElementById('share-link-display').innerText;
+            navigator.clipboard.writeText(linkText);
+            const btn = document.getElementById('copy-btn');
+            btn.innerText = '✅ Link Copied!';
+            setTimeout(() => { btn.innerText = '📋 Copy Partner Link'; }, 2000);
+        }
+
+        function toggleProtocolBtn() {
+            const checked = document.getElementById('check-24h').checked;
+            document.getElementById('protocol-btn').disabled = !checked;
+        }
+
+        function goToStep(step) {
+            const allSteps = ['pair', 'protocol', 'vectors', 'reading', 'distractor', 'recall', 'waiting', 'result'];
+            allSteps.forEach(s => {
+                const el = document.getElementById('step-' + s);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById('step-' + step);
+            if (target) target.classList.remove('hidden');
+
+            if (step === 'reading') startReadingTimer();
+            if (step === 'result') {
+                requestAnimationFrame(() => {
+                    setTimeout(initThreeScene, 100);
+                });
+            }
+        }
+
+        function updateVectorHint(axis, val) {
+            const num = parseFloat(val);
+            document.getElementById(`label-${axis}`).innerText = num.toFixed(2);
+            const hintEl = document.getElementById(`hint-${axis}`);
+
+            if (axis === 'x') {
+                hintEl.innerText = num <= 0.35 ? "Resource deficit: struggling with capacity/time; low reserve." :
+                                   num <= 0.70 ? "Balanced: meeting obligations reliably, but without surplus capacity." :
+                                                 "Resource locomotive: investing heavy energy, capital, and practical time.";
+            } else if (axis === 'y') {
+                hintEl.innerText = num <= 0.35 ? "High volatility: frequent background anxiety, agreements waver under stress." :
+                                   num <= 0.70 ? "Predictable partner: honoring agreements unless facing severe emergency." :
+                                                 "Solid anchor: dampening panic, fostering total relational security.";
+            } else if (axis === 'z') {
+                hintEl.innerText = num <= 0.35 ? "Plateau: preserving current status quo, no capacity for transformation." :
+                                   num <= 0.70 ? "Moderate growth: steady professional and personal pace without abrupt shifts." :
+                                                 "Transformation driver: scaling ambitions, lifting the dyad to higher horizons.";
+            }
+        }
+
+        function handleCrossCheckSubmit() {
+            const currentVec = {
+                x: parseFloat(document.getElementById('input-x').value) || 0.6,
+                y: parseFloat(document.getElementById('input-y').value) || 0.6,
+                z: parseFloat(document.getElementById('input-z').value) || 0.6
+            };
+
+            if (crossStep === 1) {
+                localStorage.setItem(`${currentPairId}_${myRole}_self_vec`, JSON.stringify(currentVec));
+                crossStep = 2;
+                document.getElementById('cross-title').innerText = "2. Partner Evaluation (Perceived)";
+                document.getElementById('cross-desc').innerText = "Evaluate your partner's actual capacity taking into account external pressure.";
+                document.getElementById('cross-next-btn').innerText = "Lock Coordinates → Proceed to Reading";
+
+                ['x', 'y', 'z'].forEach(ax => {
+                    document.getElementById(`input-${ax}`).value = 0.60;
+                    updateVectorHint(ax, 0.60);
+                });
+            } else {
+                localStorage.setItem(`${currentPairId}_${myRole}_perceived_vec`, JSON.stringify(currentVec));
+                crossStep = 1;
+                goToStep('reading');
+            }
+        }
+
+        function calculateCalibratedVector(selfVec, perceivedVec) {
+            const calibrateAxis = (s, p) => (Math.abs(s - p) > 0.20 ? (s + p) / 2.0 : s);
+            return {
+                x: calibrateAxis(selfVec.x, perceivedVec.x),
+                y: calibrateAxis(selfVec.y, perceivedVec.y),
+                z: calibrateAxis(selfVec.z, perceivedVec.z)
+            };
+        }
+
+        function startReadingTimer() {
+            let left = 45;
+            const timerEl = document.getElementById('read-timer');
+            const interval = setInterval(() => {
+                left--;
+                if (timerEl) timerEl.innerText = left + 's';
+                if (left <= 0) {
+                    clearInterval(interval);
+                    const box = document.getElementById('reading-box');
+                    if (box) box.remove();
+                    goToStep('distractor');
+                }
+            }, 1000);
+        }
+
+        function checkWordCount() {
+            const val = document.getElementById('recall-input').value.trim();
+            const count = val ? val.split(/\s+/).length : 0;
+            const counter = document.getElementById('word-counter');
+            const btn = document.getElementById('submit-recall-btn');
+
+            counter.innerText = `Words: ${count} (range: 25–50)`;
+            if (count >= 25 && count <= 50) {
+                counter.className = 'text-emerald-400 font-mono';
+                btn.disabled = false;
+            } else {
+                counter.className = 'text-amber-400 font-mono';
+                btn.disabled = true;
+            }
+        }
+
+        function submitRecallAction() {
+            const text = document.getElementById('recall-input').value.trim();
+            localStorage.setItem(`${currentPairId}_${myRole}_text`, text);
+            checkSyncStatus();
+        }
+
+        function checkSyncStatus() {
+            const p1Done = localStorage.getItem(`${currentPairId}_p1_text`);
+            const p2Done = localStorage.getItem(`${currentPairId}_p2_text`);
+
+            if (p1Done && p2Done) {
+                goToStep('result');
+            } else {
+                goToStep('waiting');
+            }
+        }
+
+        function simulatePartnerAction() {
+            localStorage.setItem(`${currentPairId}_p1_text`, "We had this weekend trip booked to recover, which was great, but out of nowhere my biggest client called with a major project. It is a rare career opportunity with serious money that helps our future. It makes sense to take the hit now so we benefit later.");
+            localStorage.setItem(`${currentPairId}_p2_text`, "We spent three months planning this break, paid for everything, and were literally packing our bags. Then he gets a last-minute work offer and immediately considers staying home for the money. He put his career ahead of our agreement and expected me to just accept it.");
+            localStorage.setItem(`${currentPairId}_p1_self_vec`, JSON.stringify({ x: 0.8, y: 0.6, z: 0.7 }));
+            localStorage.setItem(`${currentPairId}_p1_perceived_vec`, JSON.stringify({ x: 0.5, y: 0.6, z: 0.5 }));
+            localStorage.setItem(`${currentPairId}_p2_self_vec`, JSON.stringify({ x: 0.5, y: 0.7, z: 0.5 }));
+            localStorage.setItem(`${currentPairId}_p2_perceived_vec`, JSON.stringify({ x: 0.7, y: 0.5, z: 0.6 }));
+            goToStep('result');
+        }
+
+        function analyzeSemanticTexts(t1, t2) {
+            const weMarkers = ["we", "our", "us", "together", "both", "mutually", "shared"];
+            
+            const calcCfi = (text) => {
+                const words = text.toLowerCase().split(/\s+/);
+                let weCount = 0;
+                words.forEach(w => {
+                    if (weMarkers.some(m => w.includes(m))) weCount++;
+                });
+                return Math.min(1.0, (weCount * 2.5) / Math.max(1, words.length));
+            };
+
+            const cfi1 = calcCfi(t1);
+            const cfi2 = calcCfi(t2);
+            const avgCfi = (cfi1 + cfi2) / 2;
+
+            const hasP1Bias = (text) => activeScenario.keywords_p1_focus.some(k => text.toLowerCase().includes(k));
+            const hasP2Bias = (text) => activeScenario.keywords_p2_focus.some(k => text.toLowerCase().includes(k));
+
+            let mismatch = 0;
+            if (hasP1Bias(t1) !== hasP1Bias(t2)) mismatch++;
+            if (hasP2Bias(t1) !== hasP2Bias(t2)) mismatch++;
+            const idr = mismatch > 0 ? (mismatch === 2 ? 1.0 : 0.5) : 0.15;
+
+            return { cfi: avgCfi, idr: idr };
+        }
+
+        function calculateSynergy(v1, v2, g) {
+            const sum = new THREE.Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+            const gVec = new THREE.Vector3(g.x, g.y, g.z);
+            const gLenSq = gVec.lengthSq();
+            if (gLenSq === 0) return new THREE.Vector3(0, 0, 0);
+            const scalar = sum.dot(gVec) / gLenSq;
+            return gVec.multiplyScalar(scalar);
+        }
+
+        function calculateVolume(v1, v2, w) {
+            const cx = v1.y * v2.z - v1.z * v2.y;
+            const cy = v1.z * v2.x - v1.x * v2.z;
+            const cz = v1.x * v2.y - v1.y * v2.x;
+            return Math.abs(cx * w.x + cy * w.y + cz * w.z) / 6.0;
+        }
+
+        let scene, camera, renderer, modelGroup;
+
+        function initThreeScene() {
+            const container = document.getElementById('canvas-container');
+            if (!container) return;
+
+            if (animId) cancelAnimationFrame(animId);
+            container.innerHTML = '';
+
+            const w = container.clientWidth || 400;
+            const h = container.clientHeight || 256;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
+
+            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            camera.position.set(2.4, 1.8, 2.4);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const light = new THREE.PointLight(0xffffff, 0.8);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.GridHelper(2, 8, 0x1e293b, 0x0f172a));
+
+            modelGroup = new THREE.Group();
+            scene.add(modelGroup);
+
+            let p1Self = { x: 0.7, y: 0.6, z: 0.5 };
+            let p1Perc = { x: 0.6, y: 0.5, z: 0.5 };
+            let p2Self = { x: 0.5, y: 0.7, z: 0.6 };
+            let p2Perc = { x: 0.5, y: 0.6, z: 0.7 };
+
+            try {
+                const s1 = localStorage.getItem(`${currentPairId}_p1_self_vec`);
+                const pr1 = localStorage.getItem(`${currentPairId}_p2_perceived_vec`);
+                const s2 = localStorage.getItem(`${currentPairId}_p2_self_vec`);
+                const pr2 = localStorage.getItem(`${currentPairId}_p1_perceived_vec`);
+                if (s1) p1Self = JSON.parse(s1);
+                if (pr1) p1Perc = JSON.parse(pr1);
+                if (s2) p2Self = JSON.parse(s2);
+                if (pr2) p2Perc = JSON.parse(pr2);
+            } catch(e) {}
+
+            let v1 = calculateCalibratedVector(p1Self, p1Perc);
+            let v2 = calculateCalibratedVector(p2Self, p2Perc);
+
+            const t1 = localStorage.getItem(`${currentPairId}_p1_text`) || "";
+            const t2 = localStorage.getItem(`${currentPairId}_p2_text`) || "";
+            const metrics = analyzeSemanticTexts(t1, t2);
+
+            document.getElementById('cfi-display').innerText = metrics.cfi.toFixed(2) + (metrics.cfi >= 0.51 ? " (Cooperative)" : " (Egocentric)");
+            document.getElementById('idr-display').innerText = metrics.idr.toFixed(2) + (metrics.idr > 0.30 ? " (Comma Divergence!)" : " (Aligned)");
+            document.getElementById('scenario-title-display').innerText = activeScenario.title;
+
+            if (metrics.idr > 0.30) {
+                v1.y = Math.max(0.1, v1.y - 0.12);
+                v2.y = Math.max(0.1, v2.y - 0.15);
+            }
+
+            const goalG = { x: 0.70, y: 0.60, z: 0.80 };
+            const synW = calculateSynergy(v1, v2, goalG);
+            const vol = calculateVolume(v1, v2, synW);
+
+            document.getElementById('vol-val').innerText = vol.toFixed(4);
+
+            const actionContainer = document.getElementById('action-steps-content');
+            if (actionContainer) {
+                actionContainer.innerHTML = `
+                    <p>• <b>Partner 1:</b> ${activeScenario.repair_a}</p>
+                    <p>• <b>Partner 2:</b> ${activeScenario.repair_b}</p>
+                `;
+            }
+
+            const verts = [
+                0, 0, 0,
+                v1.x, v1.y, v1.z,
+                v2.x, v2.y, v2.z,
+                synW.x, synW.y, synW.z
+            ];
+            const indices = [0, 2, 1,  0, 3, 2,  0, 1, 3,  1, 2, 3];
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+            geo.setIndex(indices);
+            geo.computeVertexNormals();
+
+            let col = 0x10b981;
+            let statText = "HEALTHY";
+            if (vol < 0.025 || metrics.idr > 0.4) { col = 0xf59e0b; statText = "WARNING"; }
+            if (vol < 0.015 || metrics.idr >= 0.8) { col = 0xef4444; statText = "CHECK ENGINE"; }
+
+            const statusTag = document.getElementById('status-tag');
+            if (statusTag) {
+                statusTag.innerText = statText;
+                statusTag.style.color = '#' + col.toString(16);
+            }
+
+            const mat = new THREE.MeshPhongMaterial({
+                color: col,
+                opacity: 0.35,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+
+            modelGroup.add(new THREE.Mesh(geo, mat));
+            modelGroup.add(new THREE.LineSegments(
+                new THREE.EdgesGeometry(geo),
+                new THREE.LineBasicMaterial({ color: col, linewidth: 2 })
+            ));
+
+            const addVec = (v, hex) => {
+                const dir = new THREE.Vector3(v.x, v.y, v.z);
+                if (dir.length() > 0) {
+                    modelGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(0, 0, 0), dir.length(), hex, 0.08, 0.04));
+                }
+            };
+            addVec(v1, 0xf43f5e);
+            addVec(v2, 0x38bdf8);
+            addVec(synW, 0xfbbf24);
+
+            function animate() {
+                animId = requestAnimationFrame(animate);
+                modelGroup.rotation.y += 0.003;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+    </script>
+
+    
